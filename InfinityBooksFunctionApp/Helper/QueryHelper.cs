@@ -2,9 +2,10 @@
 using InfinityBooksFunctionApp.Models;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
+using System.Data.SqlClient;
+
 
 namespace InfinityBooksFunctionApp.Helper
 {
@@ -36,9 +37,9 @@ namespace InfinityBooksFunctionApp.Helper
         #endregion
 
         #region InsertTableData
-        public List<T> Insert(JObject fields,string Entity)
+        public List<T> Insert(JObject fields,string Entity,string PrimaryKey)
         {
-            var query = builder.ConstructInsertQuery(fields,Entity);
+            var query = builder.ConstructInsertQuery(fields,Entity,PrimaryKey);
             return RunQuery(query).ToList();
         }
         #endregion

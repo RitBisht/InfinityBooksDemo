@@ -32,13 +32,14 @@ namespace InfinityBooksFunctionApp.Helper
         }
 
 
-        public Query ConstructInsertQuery(JObject fields,string Entity)
+        public Query ConstructInsertQuery(JObject fields,string Entity,string PrimaryKey)
         {
             Dictionary<string, object> desFields = JsonConvert.DeserializeObject<Dictionary<string, object>>(fields.ToString());
             desFields = desFields.Where(x => PropertiesCache.ContainsKey(x.Key.ToUpper()))
                          .ToDictionary(x => x.Key, x => x.Value);
             Query resultQuery = new Query();
             StringBuilder query = new StringBuilder();
+            desFields.Remove(PrimaryKey);
             query.Append("INSERT INTO ");
             query.Append(Entity);
             query.Append(" (");
