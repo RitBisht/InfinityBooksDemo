@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InfinityBooksFunctionApp.Models
 {
-    class User
+    class ProductType
     {
         [Key]
-        public int id { get; set; }
-        public int accountTypeId { get; set; }
-        public string username { get; set; }
-        public string password { get; set; }
-        public string emailId { get; set; }
+        public int productTypeId { get; set; }
+        public string Name { get; set; }
+        public string description { get; set; }
         public int status { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }

@@ -1,0 +1,54 @@
+﻿@using InfinityBooksDemo.Models
+
+@model IEnumerable<InfinityBooksDemo.Models.Product>
+
+<main role="main">
+    @if (Model.Count() > 0)
+    {
+        <section class="jumbotron text-center mt-5">
+            <div class="container">
+                <h1 class="jumbotron-heading">Products</h1>
+
+            </div>
+        </section>
+
+        <div class="album py-5 bg-light">
+            <div class="container">
+
+                <div class="row">
+                    @foreach (var product in Model)
+                    {
+                        <div class="col-md-4">
+                            <div class="card mb-4 shadow-sm">
+
+                                <img src="@product.productImages[0].blobimagePath" width="100%" height="225" style="object-fit:contain">
+                                <div class="card-body">
+                                    <p class="card-title"> @product.name</p>
+                                    <p class="card-text" style="line-height: 1em;height: 3em;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;width: 100%;"> @product.description</p>
+
+                                    <div class="btn-group float-left">
+                                        <a class="btn btn-sm btn-outline-secondary" href="@Url.Action("productDetail", "Products", new { id = product.productId })">Details</a>
+                                    </div>
+                                    <div class="btn-group float-right text-right">
+                                        <a class="btn btn-sm btn-outline-secondary" href="/UserCart/CartPostAsync/@product.productId">Add to Cart</a>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm">
+                <h4>No Product Found</h4>
+            </div>
+        </div>
+    }
+    </main>
+    }
+

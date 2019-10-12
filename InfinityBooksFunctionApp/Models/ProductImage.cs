@@ -1,17 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace InfinityBooksFunctionApp.Models
 {
-    class User
+    class ProductImage
     {
         [Key]
-        public int id { get; set; }
-        public int accountTypeId { get; set; }
-        public string username { get; set; }
-        public string password { get; set; }
-        public string emailId { get; set; }
-        public int status { get; set; }
+        public int productImageId { get; set; }
+        public int productId { get; set; }
+        public string blobimagePath { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public DateTime? deletedAt { get; set; }

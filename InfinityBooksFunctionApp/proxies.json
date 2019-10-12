@@ -1,6 +1,6 @@
 {
   "proxies": {
-    "permanent redirect": {
+    "google redirect": {
       "matchCondition": {
         "methods": [
           "GET"
@@ -9,8 +9,21 @@
       },
       "responseOverrides": {
         "response.statusCode": "301",
-        "response.headers.Location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=175142243483-4p6n97bgei5s1ueenmufdj09md20ha4r.apps.googleusercontent.com&response_type=code&scope=openid%20email%20profile&redirect_uri=http://localhost:7071/api/saveGoogleUser&state=abcdef"
+        "response.headers.Location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=175142243483-4p6n97bgei5s1ueenmufdj09md20ha4r.apps.googleusercontent.com&response_type=code&scope=openid%20email%20profile&redirect_uri=http://localhost:54418/Login/UserGoogleLoginHelper&state=abcdef"
       }
+    },
+    "facebook redirect": {
+      "matchCondition": {
+        "methods": [
+          "GET"
+        ],
+        "route": "/api/facebookVerification"
+      },
+      "responseOverrides": {
+        "response.statusCode": "301",
+        "response.headers.Location": "https://www.facebook.com/dialog/oauth?client_id=750890845352322&redirect_uri=http://localhost:7071/api/saveFacebookUser&scope=email"
+      }
+    
     }
   }
 }

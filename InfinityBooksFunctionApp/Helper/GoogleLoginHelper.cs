@@ -16,10 +16,13 @@ namespace InfinityBooksFunctionApp.Helper
             string Entity = "infi.Users";
             string PrimaryKey = "id";
             QueryHelper<User> userQueryHelper = new QueryHelper<User>();
+            QueryHelper<UserProfile> userProfileQueryHelper = new QueryHelper<UserProfile>();
             if (string.IsNullOrEmpty(code))
             {
                 request.CreateResponse(HttpStatusCode.InternalServerError);
             }
+
+            #region Getting User Details from Google Api
 
             var httpClient = new HttpClient
             {
@@ -34,25 +37,27 @@ namespace InfinityBooksFunctionApp.Helper
             var req = new HttpRequestMessage(HttpMethod.Post, requestUrl) { Content = new FormUrlEncodedContent(dict) };
             var response = await httpClient.SendAsync(req);
             var token = JsonConvert.DeserializeObject<GmailToken>(await response.Content.ReadAsStringAsync());
-            //Session["user"] = token.AccessToken;
             var obj = await GetuserProfile(token.AccessToken);
+
+            #endregion
+
 
             #region Checking user existence
 
-            
+
             List<KeyValuePair<string, string>> parameter=new List<KeyValuePair<string, string>>();
             parameter.Add(new KeyValuePair<string, string>("emailId", obj.Email));
             List<User> userDetail=userQueryHelper.Select(parameter,null,null,null,null,"infi.Users");
             if(userDetail==null || userDetail.Count==0)
             {
-                User newUser = new User() { username=obj.GivenName,status=1,emailId=obj.Email,createdAt=DateTime.UtcNow};
+                User newUser = new User() { username=obj.GivenName,status=1,emailId=obj.Email, accountTypeId = 1,createdAt =DateTime.UtcNow};
+                UserProfile newUserProfile = new UserProfile() { emailId = obj.Email, gender = obj.Gender, firstName = obj.Name, lastName = obj.FamilyName, createdAt = DateTime.UtcNow };
+                userProfileQueryHelper.Insert(JObject.FromObject(newUserProfile), "infi.UserProfiles", PrimaryKey);
                 userDetail.AddRange(userQueryHelper.Insert(JObject.FromObject(newUser), Entity, PrimaryKey));
             }
-
-
             #endregion
 
-            return request.CreateResponse(HttpStatusCode.OK,);
+            return userDetail!=null&& userDetail.Count>0?request.CreateResponse(HttpStatusCode.OK,userDetail): request.CreateResponse(HttpStatusCode.BadRequest);
         }
 
         public async Task<UserGoogleProfile> GetuserProfile(string accesstoken)

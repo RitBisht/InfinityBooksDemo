@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Data.SqlClient;
-
+using Microsoft.Azure.Services.AppAuthentication;
 
 namespace InfinityBooksFunctionApp.Helper
 {
@@ -13,10 +13,13 @@ namespace InfinityBooksFunctionApp.Helper
     {
         private static string connectionString;
         QueryBuilder<T> builder;
+        string dbAccessToken;
         public QueryHelper()
         {
             connectionString = "Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;User ID=infiadmin;Password=Newserver!23;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+            //connectionString = "Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
             builder = new QueryBuilder<T>();
+            dbAccessToken=(new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net").Result;
         }
         #region SelectTableData
         public List<T> Select(IEnumerable<KeyValuePair<string, string>> parameters, string defaultOrderBy, string viewName, string accessControlclause, string pagingSortKey, string Entity)

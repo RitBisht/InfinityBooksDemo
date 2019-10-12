@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ namespace InfinityBooksFunctionApp.Helper
         private HttpRequestMessage _req;
         private string _Entity;
         private string _PrimaryKey;
-
         public GeneralHelper(HttpRequestMessage req, string Entity, string PrimaryKey)
         {
             _req = req;
@@ -26,7 +26,7 @@ namespace InfinityBooksFunctionApp.Helper
             if (string.Equals(reqType, "GET"))
             {
                 IEnumerable<KeyValuePair<string, string>> queryParams = queryHelper.GetReqQueryParam(_req, _PrimaryKey, id);
-                var resultData = queryHelper.Select(queryParams, null, null, null, null, _Entity);
+                var resultData = queryHelper.Select(queryParams, null, null, null, null, _Entity);                
                 return resultData != null && resultData.Count > 0 ? _req.CreateResponse(HttpStatusCode.OK, resultData) : _req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
             }
 

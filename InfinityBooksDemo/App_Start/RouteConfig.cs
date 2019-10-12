@@ -16,7 +16,7 @@ namespace InfinityBooksDemo
             routes.MapRoute(
                 name: "Default",
                 url: "{controller}/{action}/{id}",
-                defaults: new { controller = "Login", action = "UserLogin", id = UrlParameter.Optional }
+                defaults: new { controller = "products", action = "products", id = UrlParameter.Optional }
             );
         }
     }

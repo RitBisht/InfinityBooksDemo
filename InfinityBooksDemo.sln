@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.28307.852
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfinityBooksDemo", "InfinityBooksDemo\InfinityBooksDemo.csproj", "{856D9839-5211-40EC-B2A8-F0A29D423D30}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfinityBooksFunctionApp", "InfinityBooksFunctionApp\InfinityBooksFunctionApp.csproj", "{2B950D04-D196-42B2-8DB5-D14A062DBDB8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "InfinityBooksFunctionApp", "InfinityBooksFunctionApp\InfinityBooksFunctionApp.csproj", "{2B950D04-D196-42B2-8DB5-D14A062DBDB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InfiBooksDemoTestCases", "InfiBooksDemoTestCases\InfiBooksDemoTestCases.csproj", "{A34E6462-A25B-4C77-BFEA-46AF5AE73EA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{2B950D04-D196-42B2-8DB5-D14A062DBDB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B950D04-D196-42B2-8DB5-D14A062DBDB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B950D04-D196-42B2-8DB5-D14A062DBDB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A34E6462-A25B-4C77-BFEA-46AF5AE73EA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A34E6462-A25B-4C77-BFEA-46AF5AE73EA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A34E6462-A25B-4C77-BFEA-46AF5AE73EA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A34E6462-A25B-4C77-BFEA-46AF5AE73EA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

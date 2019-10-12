@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace InfinityBooksFunctionApp.Models
+namespace InfinityBooksDemo.Models
 {
-    class UserProfile
+    public class UserProfile
     {
         [Key]
         public int id { get; set; }
@@ -18,14 +18,10 @@ namespace InfinityBooksFunctionApp.Models
         public string emailId { get; set; }
         public string contactNumber { get; set; }
         public string gender { get; set; }
+        public string password { get; set; }
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public DateTime? deletedAt { get; set; }
-        [NotMapped]
-        public string password { get; set; }
-        [NotMapped]
         public Address address { get; set; }
-        [NotMapped]
-        public bool ExistingUser { get; set; } = false;
     }
 }

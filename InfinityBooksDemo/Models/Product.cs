@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace InfinityBooksFunctionApp.Models
+namespace InfinityBooksDemo.Models
 {
-    class Product
+    public class Product
     {
         [Key]
         public int productId { get; set; }

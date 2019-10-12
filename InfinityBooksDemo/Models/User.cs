@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace InfinityBooksFunctionApp.Models
+namespace InfinityBooksDemo.Models
 {
-    class User
+    public class User
     {
         [Key]
         public int id { get; set; }

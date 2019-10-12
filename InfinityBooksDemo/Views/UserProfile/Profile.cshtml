@@ -1,0 +1,105 @@
+﻿@using InfinityBooksDemo.Models
+
+@model InfinityBooksDemo.Models.UserProfile
+
+
+@{
+    ViewBag.Title = "Profile";
+}
+<div class="container" style="margin-top:100px">
+    <div class="row">
+        <div class="col-12">
+
+            @using (Html.BeginForm("UserProfilePut", "UserProfile", FormMethod.Post))
+
+            {
+                @Html.HiddenFor(m => m.id)
+                @Html.HiddenFor(m => m.address.addressesId)             
+
+                <h1 class="h1 mb-3 font-weight-bold"><a href="#">Infinity Books</a></h1>
+                <h5 class="h5 mb-3 font-weight-normal">Profile</h5>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label">First Name</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.firstName, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">Last Name</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.lastName, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">Email</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.emailId, new { @class = "form-control mb-2 mr-sm-2" , disabled=true})
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">Password</label>
+                    <div class="col-sm-10">
+                        @Html.PasswordFor(m => m.password, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">Contact Number</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.contactNumber, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label  class="col-sm-2 col-form-label">Gender</label>
+                    <div class="col-sm-10">
+                        @Html.DropDownListFor(m => m.gender, new List<SelectListItem>
+                              { new SelectListItem{Text="Male", Value="M"},
+                                new SelectListItem{Text="Female", Value="F"},
+                new SelectListItem{Text="Other", Value="O"}}, "Please select", new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">AddressLine1</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.addressLine1, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">AddressLine2</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.addressLine2, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">City</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.city, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">State</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.state, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Country</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.country, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="inputPassword3" class="col-sm-2 col-form-label">Pincode</label>
+                    <div class="col-sm-10">
+                        @Html.TextBoxFor(m => m.address.pincode, new { @class = "form-control mb-2 mr-sm-2" })
+                    </div>
+                </div>
+
+
+                <div class="form-group row">
+                    <div class="col-sm-10">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            }
+
+        </div>
