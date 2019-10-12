@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Data.SqlClient;
 using Microsoft.Azure.Services.AppAuthentication;
+using System;
 
 namespace InfinityBooksFunctionApp.Helper
 {
@@ -13,10 +14,13 @@ namespace InfinityBooksFunctionApp.Helper
     {
         private static string connectionString;
         QueryBuilder<T> builder;
+        private static string accessToken; 
         string dbAccessToken;
         public QueryHelper()
         {
-            connectionString = "Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;User ID=infiadmin;Password=Newserver!23;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+            connectionString = Environment.GetEnvironmentVariable("SQLConnectionString");
+            var accessToken = (new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net/").Result; 
+           /// bo= Environment.GetEnvironmentVariable("SQLConnectionString", EnvironmentVariableTarget.Process);
             //connectionString = "Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
             builder = new QueryBuilder<T>();
             dbAccessToken=(new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net").Result;
@@ -68,9 +72,10 @@ namespace InfinityBooksFunctionApp.Helper
         #region QueryExecuteDelete
         public int ExecuteQuery(Query query)
         {
-            using (var connection = new SqlConnection(connectionString))
-            {                    
-                 return  connection.Execute(query.query, query.dynamicParams as object, commandTimeout: null, commandType: null);            
+            //using (var connection = new SqlConnection())
+            using (var connection = new SqlConnection() { AccessToken=accessToken,ConnectionString=connectionString})
+            {
+                return connection.Execute(query.query, query.dynamicParams as object, commandTimeout: null, commandType: null);
             }
         }
         #endregion

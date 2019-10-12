@@ -11,7 +11,8 @@ namespace InfinityBooksDemo.Controllers
         // GET: Logout
         public ActionResult CleanDetails()
         {
-            Request.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
+            Response.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
+            Session["userId"] = null;
             return RedirectToAction("UserLogin", "Login");
         }
 

@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -22,16 +23,12 @@ namespace InfinityBooksDemo.Controllers
         [HttpPost]
         public async System.Threading.Tasks.Task<ActionResult> UserRegisterPost(UserProfile userProfile)
         {
-            WebRequestHandler handler = new WebRequestHandler();
-            handler.CookieContainer = new System.Net.CookieContainer();
-            handler.UseCookies = true;
-            handler.UseDefaultCredentials = true;
-            IEnumerable<UserProfile> user = null;
-            using (var client = new HttpClient(handler))
+                IEnumerable<UserProfile> user = null;
+            using (var client = new HttpClient())
             {
                 if (userProfile != null)
                 {                   
-                    client.BaseAddress = new Uri("http://localhost:7071/api/");
+                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
 
                     var json = JsonConvert.SerializeObject(userProfile);
 
@@ -45,7 +42,8 @@ namespace InfinityBooksDemo.Controllers
                     {
                         var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
                         user = readTask;
-                        Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
+                        Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().userId)));
+                        Session.Add("userId", Convert.ToString(user.First().userId));
                         return RedirectToAction("Products", "Products");
                     }
                     if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -67,12 +65,13 @@ namespace InfinityBooksDemo.Controllers
 
         public async Task<ActionResult> UserProfileGet()       
         {
-            if (Request.Cookies.AllKeys.Contains("userId") && !string.Equals(Request.Cookies["userId"].Value, '0'))
+            if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-                    IEnumerable<UserProfile> user;
+            
+            IEnumerable<UserProfile> user;
                     using (var client = new HttpClient())
                     {
-                        client.BaseAddress = new Uri("http://localhost:7071/api/");
+                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                         var responseTask = client.GetAsync("userProfile?userId="+ Request.Cookies["userId"].Value);
                         responseTask.Wait();
 
@@ -81,7 +80,7 @@ namespace InfinityBooksDemo.Controllers
                         {
                             var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
                             user = readTask;
-                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
+                            //Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
                             return View("profile",user.First());
                         }
                         if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -104,12 +103,12 @@ namespace InfinityBooksDemo.Controllers
         [HttpPost]
         public async System.Threading.Tasks.Task<ActionResult> UserProfilePut(UserProfile userProfile)
         {
-            if (Request.Cookies.AllKeys.Contains("userId") && !string.Equals(Request.Cookies["userId"].Value, '0'))
+            if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-                IEnumerable<UserProfile> user;
+            IEnumerable<UserProfile> user;
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost:7071/api/");
+                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                     userProfile.userId = Convert.ToInt32(Request.Cookies["userId"].Value);
                     userProfile.address.userId = userProfile.userId;
                     var json = JsonConvert.SerializeObject(userProfile);
@@ -124,7 +123,7 @@ namespace InfinityBooksDemo.Controllers
                     {
                         var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
                         user = readTask;
-                        Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
+                        //Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
                         return RedirectToAction("Products", "Products");
                     }
                     if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)

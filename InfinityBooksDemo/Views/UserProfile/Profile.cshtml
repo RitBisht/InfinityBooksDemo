@@ -14,10 +14,10 @@
 
             {
                 @Html.HiddenFor(m => m.id)
-                @Html.HiddenFor(m => m.address.addressesId)             
+                @Html.HiddenFor(m => m.address.addressesId)
 
-                <h1 class="h1 mb-3 font-weight-bold"><a href="#">Infinity Books</a></h1>
-                <h5 class="h5 mb-3 font-weight-normal">Profile</h5>
+            <h3 class="h1 mb-3 font-weight-bold" style="color:black">Profile</h3>
+               
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">First Name</label>
                     <div class="col-sm-10">
@@ -25,31 +25,31 @@
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label  class="col-sm-2 col-form-label">Last Name</label>
+                    <label class="col-sm-2 col-form-label">Last Name</label>
                     <div class="col-sm-10">
                         @Html.TextBoxFor(m => m.lastName, new { @class = "form-control mb-2 mr-sm-2" })
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label  class="col-sm-2 col-form-label">Email</label>
+                    <label class="col-sm-2 col-form-label">Email</label>
                     <div class="col-sm-10">
-                        @Html.TextBoxFor(m => m.emailId, new { @class = "form-control mb-2 mr-sm-2" , disabled=true})
+                        @Html.TextBoxFor(m => m.emailId, new { @class = "form-control mb-2 mr-sm-2", disabled = true })
                     </div>
                 </div>
-                <div class="form-group row">
-                    <label  class="col-sm-2 col-form-label">Password</label>
-                    <div class="col-sm-10">
-                        @Html.PasswordFor(m => m.password, new { @class = "form-control mb-2 mr-sm-2" })
-                    </div>
+                @*<div class="form-group row">
+                <label  class="col-sm-2 col-form-label">Password</label>
+                <div class="col-sm-10">
+                    @Html.PasswordFor(m => m.password, new { @class = "form-control mb-2 mr-sm-2" })
                 </div>
+            </div>*@
                 <div class="form-group row">
-                    <label  class="col-sm-2 col-form-label">Contact Number</label>
+                    <label class="col-sm-2 col-form-label">Contact Number</label>
                     <div class="col-sm-10">
                         @Html.TextBoxFor(m => m.contactNumber, new { @class = "form-control mb-2 mr-sm-2" })
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label  class="col-sm-2 col-form-label">Gender</label>
+                    <label class="col-sm-2 col-form-label">Gender</label>
                     <div class="col-sm-10">
                         @Html.DropDownListFor(m => m.gender, new List<SelectListItem>
                               { new SelectListItem{Text="Male", Value="M"},

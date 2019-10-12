@@ -17,7 +17,7 @@ namespace InfinityBooksDemo.Models
         public DateTime? createdAt { get; set; }
         public DateTime? updatedAt { get; set; }
         public DateTime? deletedAt { get; set; }
-        [NotMapped]
         public Product productdetail { get; set; }
+        public string operation { get; set; }
     }
 }

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
+using System.Configuration;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -16,14 +17,14 @@ namespace InfinityBooksDemo.Controllers
         [HttpGet]
         public async Task<ActionResult> Products(string searchString = null)
         {
-                HttpCookie userIdcookieValue = Request.Cookies["userId"];
+            HttpCookie userIdcookieValue = Request.Cookies["userId"];
                 IEnumerable<Product> products = null;
 
                 using (var client = new HttpClient())
                 {
-                    client.BaseAddress = new Uri("http://localhost:7071/api/");
-                    //HTTP GET
-                    HttpResponseMessage res=null;
+                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                //HTTP GET
+                HttpResponseMessage res=null;
                     if(searchString != null)
                     {
                         var responseTask = client.GetAsync("product?searchString=" + searchString);
@@ -63,16 +64,17 @@ namespace InfinityBooksDemo.Controllers
         [Route("id")]
         public async Task<ActionResult> ProductDetail(string id)
         {
-                Product product = null;
+            
+            Product product = null;
 
                 if (!string.IsNullOrEmpty(id))
                 {
                     using (var client = new HttpClient())
                     {
                         IEnumerable<Product> products = null;
-                        client.BaseAddress = new Uri("http://localhost:7071/api/");
-                        //HTTP GET
-                        var responseTask = client.GetAsync(string.Concat("product/", id));
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                    //HTTP GET
+                    var responseTask = client.GetAsync(string.Concat("product/", id));
                         responseTask.Wait();
 
                         var result = responseTask.Result;

@@ -83,7 +83,7 @@ namespace InfinityBooksFunctionApp
             {
                 //string searchParam = searchqueryCount.
                 string query = string.Concat("select * from ", Entity, " where author LIKE '%", searchParam.First(), "%' OR productCode LIKE '%", searchParam.First(), "%' OR name LIKE '%", searchParam.First(), "%'");
-                using (var connection = new SqlConnection("Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;User ID=infiadmin;Password=Newserver!23;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"))
+                using (var connection = new SqlConnection(Environment.GetEnvironmentVariable("SQLConnectionString")))
                 {
                     var product = connection.Query<Product>(query).ToList();
                     var prodIdList = product.Select(x => x.productId);
@@ -214,10 +214,11 @@ namespace InfinityBooksFunctionApp
                         qParameters = new List<KeyValuePair<string, string>>();
                         qParameters.Add(new KeyValuePair<string, string>("userId", Convert.ToString(resultData.First().userId)));
                         qParameters.Add(new KeyValuePair<string, string>("addressTypeId", "1"));
+                        objectData.address.addressTypeId = 1;
                         var add = objectData.address;
                         if (add.addressesId != 0)
                         {
-                            addressQueryHelper.Update(JObject.FromObject(add), "infi.addresses", "addressesId", qParameters);
+                            addressQueryHelper.Update(JObject.FromObject(add), "addressesId","infi.addresses",qParameters);
                         }
                         else
                         {
