@@ -21,6 +21,7 @@ namespace InfinityBooksFunctionApp.Helper
             _httpClient = new HttpClient
             {
                 BaseAddress = new Uri("https://graph.facebook.com/v2.8/")
+
             };
           
         }
@@ -37,8 +38,11 @@ namespace InfinityBooksFunctionApp.Helper
             }
 
             #region Fetching FaceBook user detail
-            
+
+
+
             var requestUrl = $"/oauth/access_token?authorize?type=client_cred&client_id=750890845352322&redirect_uri=http://localhost:7071/api/saveFacebookUser&code={code}&client_secret=5589ef076c7f9c1027648c505a4113ad&fields=id,name,email,first_name,last_name,age_range,birthday,gender,locale";
+            //var requestUrl = $"/oauth/access_token?authorize?type=client_cred&client_id=750890845352322&redirect_uri=http://localhost:7071/api/saveFacebookUser&code={code}&client_secret=5589ef076c7f9c1027648c505a4113ad&fields=id,name,email,first_name,last_name,age_range,birthday,gender,locale";
            
             var req = new HttpRequestMessage(HttpMethod.Get, requestUrl);
             var response = await _httpClient.SendAsync(req);

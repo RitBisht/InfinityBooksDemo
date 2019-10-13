@@ -19,7 +19,7 @@ namespace InfinityBooksFunctionApp
 {
     public static class InfinityBooksOperations
     {
-       [FunctionName("UserAuthentication")]
+        [FunctionName("UserAuthentication")]
         public static async Task<HttpResponseMessage> UserAuth([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "auth")]HttpRequestMessage req, TraceWriter log)
         {
             string PrimaryKey = "id";
@@ -28,11 +28,11 @@ namespace InfinityBooksFunctionApp
             QueryHelper<User> queryHelper = new QueryHelper<User>();
             var jsonString = await req.Content.ReadAsStringAsync();
             User objectData = JsonConvert.DeserializeObject<User>(jsonString);
-            if(!string.IsNullOrEmpty(objectData.emailId) && !string.IsNullOrEmpty(objectData.password))
+            if (!string.IsNullOrEmpty(objectData.emailId) && !string.IsNullOrEmpty(objectData.password))
             {
-                List<KeyValuePair<string, string>>  qParameters = new List<KeyValuePair<string, string>>();
+                List<KeyValuePair<string, string>> qParameters = new List<KeyValuePair<string, string>>();
                 qParameters.Add(new KeyValuePair<string, string>("email", Convert.ToString(objectData.emailId)));
-                qParameters.Add(new KeyValuePair<string, string>("password", Convert.ToString(objectData.password)));               
+                qParameters.Add(new KeyValuePair<string, string>("password", Convert.ToString(objectData.password)));
                 var resultData = queryHelper.Select(qParameters, null, null, null, null, Entity);
 
                 var cookie = new CookieHeaderValue("userId", Convert.ToString(resultData.First().id));
@@ -41,7 +41,7 @@ namespace InfinityBooksFunctionApp
                 //cookie.Domain = Request.RequestUri.Host;
                 cookie.Path = "/";
 
-                if(resultData!=null)
+                if (resultData != null)
                 {
                     var resp = req.CreateResponse(HttpStatusCode.OK, resultData);
 
@@ -56,10 +56,10 @@ namespace InfinityBooksFunctionApp
                     req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
                 }
                 //return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData).Headers.AddCookies(new CookieHeaderValue[] { cookie}) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
-               
+
             }
             return req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
-          }
+        }
 
 
         [FunctionName("ProductDetails")]
@@ -77,9 +77,9 @@ namespace InfinityBooksFunctionApp
 
 
             IEnumerable<KeyValuePair<string, string>> queryParams = queryHelper.GetReqQueryParam(req, PrimaryKey, id);
-            
+
             var searchParam = queryParams.Where(x => x.Key.ToUpper() == "SEARCHSTRING").Select(x => x.Value);
-            if (searchParam!=null && searchParam.Count()>0)
+            if (searchParam != null && searchParam.Count() > 0)
             {
                 //string searchParam = searchqueryCount.
                 string query = string.Concat("select * from ", Entity, " where author LIKE '%", searchParam.First(), "%' OR productCode LIKE '%", searchParam.First(), "%' OR name LIKE '%", searchParam.First(), "%'");
@@ -94,11 +94,11 @@ namespace InfinityBooksFunctionApp
                     queryParams = tempqueryParam;
                 }
             }
-            
+
 
             var resultData = queryHelper.Select(queryParams, null, null, null, null, Entity);
 
-            if(resultData!=null && resultData.Count>0)
+            if (resultData != null && resultData.Count > 0)
             {
                 foreach (var product in resultData)
                 {
@@ -108,14 +108,14 @@ namespace InfinityBooksFunctionApp
                     qParameters.Add(new KeyValuePair<string, string>("productTypeId", Convert.ToString(product.productTypeId)));
 
 
-                    var prodCatgory=productCategoryQueryHelper.Select(qParameters, null, null, null, null, "infi.ProductCategories");
+                    var prodCatgory = productCategoryQueryHelper.Select(qParameters, null, null, null, null, "infi.ProductCategories");
                     product.productCategoryName = prodCatgory.First().name;
 
                     var prodType = productTypeQueryHelper.Select(qParameters, null, null, null, null, "infi.ProductType");
                     product.productTypeName = prodType.First().Name;
 
-                    var imageDataResult=productImageQueryHelper.Select(qParameters, null, null, null, null, "infi.ProductImages");
-                    if(imageDataResult!=null && imageDataResult.Count>0)
+                    var imageDataResult = productImageQueryHelper.Select(qParameters, null, null, null, null, "infi.ProductImages");
+                    if (imageDataResult != null && imageDataResult.Count > 0)
                     {
                         product.productImages = imageDataResult;
                     }
@@ -146,7 +146,7 @@ namespace InfinityBooksFunctionApp
                     {
                         qParameters = new List<KeyValuePair<string, string>>();
                         qParameters.Add(new KeyValuePair<string, string>("userId", Convert.ToString(userprofile.userId)));
-                        qParameters.Add(new KeyValuePair<string, string>("addressTypeId","1"));                     
+                        qParameters.Add(new KeyValuePair<string, string>("addressTypeId", "1"));
 
 
                         var addresses = addressQueryHelper.Select(qParameters, null, null, null, null, "infi.Addresses");
@@ -155,7 +155,7 @@ namespace InfinityBooksFunctionApp
                             userprofile.address = addresses.First();
                         }
 
-                      
+
                     }
                 }
                 return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
@@ -166,13 +166,13 @@ namespace InfinityBooksFunctionApp
                 IEnumerable<KeyValuePair<string, string>> queryParams = userProfileHelper.GetReqQueryParam(req, PrimaryKey, id);
                 var jsonString = await req.Content.ReadAsStringAsync();
                 var objectData = JsonConvert.DeserializeObject<UserProfile>(jsonString);
-                if(!string.IsNullOrEmpty(objectData.emailId))
+                if (!string.IsNullOrEmpty(objectData.emailId))
                 {
                     qParameters = new List<KeyValuePair<string, string>>();
                     qParameters.Add(new KeyValuePair<string, string>("emailId", objectData.emailId));
                     //qParameters.Add(new KeyValuePair<string, string>("addressTypeId", "1"));
-                    var userSearch=userHelper.Select(qParameters, null, null, null, null, "infi.Users");
-                    if(userSearch==null || userSearch.Count==0)
+                    var userSearch = userHelper.Select(qParameters, null, null, null, null, "infi.Users");
+                    if (userSearch == null || userSearch.Count == 0)
                     {
                         req.CreateResponse(HttpStatusCode.Conflict);
                     }
@@ -185,11 +185,11 @@ namespace InfinityBooksFunctionApp
                 objectData.userId = userResult.First().id;
 
                 var resultData = userProfileHelper.Insert(JObject.FromObject(objectData), Entity, PrimaryKey);
-               
+
                 if (resultData != null)
                 {
-                    
-                    if (objectData.address!=null)
+
+                    if (objectData.address != null)
                     {
                         var add = objectData.address;
                         add.userId = resultData.First().userId;
@@ -218,7 +218,7 @@ namespace InfinityBooksFunctionApp
                         var add = objectData.address;
                         if (add.addressesId != 0)
                         {
-                            addressQueryHelper.Update(JObject.FromObject(add), "addressesId","infi.addresses",qParameters);
+                            addressQueryHelper.Update(JObject.FromObject(add), "addressesId", "infi.addresses", qParameters);
                         }
                         else
                         {
@@ -230,7 +230,7 @@ namespace InfinityBooksFunctionApp
                 return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
             }
             return null;
-           
+
         }
 
 
@@ -269,8 +269,6 @@ namespace InfinityBooksFunctionApp
                                 cartItem.productdetail.productImages = imageDataResult;
                             }
                         }
-
-
                     }
                 }
                 return req.CreateResponse(HttpStatusCode.OK, resultData);
@@ -281,12 +279,12 @@ namespace InfinityBooksFunctionApp
                 IEnumerable<KeyValuePair<string, string>> queryParams = queryHelper.GetReqQueryParam(req, PrimaryKey, id);
                 var jsonString = await req.Content.ReadAsStringAsync();
                 JObject objectData = JsonConvert.DeserializeObject<JObject>(jsonString);
-                List<KeyValuePair<string, string>> tempParameters=new List<KeyValuePair<string, string>>();
-                tempParameters.Add(new KeyValuePair<string, string>("userId",objectData["userId"].ToString()));
+                List<KeyValuePair<string, string>> tempParameters = new List<KeyValuePair<string, string>>();
+                tempParameters.Add(new KeyValuePair<string, string>("userId", objectData["userId"].ToString()));
                 tempParameters.Add(new KeyValuePair<string, string>("productId", objectData["productId"].ToString()));
-                var searchResult=queryHelper.Select(tempParameters, null, null, null, null, Entity);
+                var searchResult = queryHelper.Select(tempParameters, null, null, null, null, Entity);
                 List<Cart> resultData = null;
-                if(searchResult!=null && searchResult.Count>0)
+                if (searchResult != null && searchResult.Count > 0)
                 {
                     var cartValue = searchResult.First();
                     cartValue.quantity++;
@@ -296,7 +294,7 @@ namespace InfinityBooksFunctionApp
                 {
                     resultData = queryHelper.Insert(objectData, Entity, PrimaryKey);
                 }
-                
+
                 return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData) : req.CreateResponse(HttpStatusCode.NoContent, "Data Not Found");
             }
 
@@ -329,41 +327,88 @@ namespace InfinityBooksFunctionApp
         //}
 
 
-        [FunctionName("SaveGoogleUser")]
-        public static async Task<HttpResponseMessage> SaveGoogleUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "saveGoogleUser")]HttpRequestMessage req, TraceWriter log)
+        [FunctionName("SaveGoogleNewUser")]
+        public static async Task<HttpResponseMessage> SaveGoogleUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "saveGoogleUser")]HttpRequestMessage req, TraceWriter log)
         {
-            string code = req.GetQueryNameValuePairs()
-                .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
-                .Value;
-            GoogleLoginHelper googleLoginHelper = new GoogleLoginHelper();
-            return googleLoginHelper.StoreGoogleUserData(req, code).Result;
+            string Entity = "infi.Users";
+            string PrimaryKey = "id";
+            QueryHelper<User> userQueryHelper = new QueryHelper<User>();
+            QueryHelper<UserProfile> userProfileQueryHelper = new QueryHelper<UserProfile>();
+            var jsonString = await req.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                UserGoogleProfile objectData = JsonConvert.DeserializeObject<UserGoogleProfile>(jsonString);
 
+                List<KeyValuePair<string, string>> parameter = new List<KeyValuePair<string, string>>();
+                parameter.Add(new KeyValuePair<string, string>("emailId", objectData.Email));
+
+                List<User> userDetail = userQueryHelper.Select(parameter, null, null, null, null, "infi.Users");
+                if (userDetail == null || userDetail.Count == 0)
+                {
+                    User newUser = new User() { username = objectData.GivenName, status = 1, emailId = objectData.Email, accountTypeId = 1, createdAt = DateTime.UtcNow };
+                    var newUserDetail = userQueryHelper.Insert(JObject.FromObject(newUser), Entity, PrimaryKey);
+                    UserProfile newUserProfile = new UserProfile() { emailId = objectData.Email, gender = objectData.Gender, firstName = objectData.GivenName, lastName = objectData.FamilyName, userId = newUserDetail.First().id, createdAt = DateTime.UtcNow };
+                    userProfileQueryHelper.Insert(JObject.FromObject(newUserProfile), "infi.UserProfiles", PrimaryKey);
+                    userDetail.AddRange(newUserDetail);
+                }
+                return userDetail != null && userDetail.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, userDetail) : req.CreateResponse(HttpStatusCode.Unauthorized);
+            }
+            return req.CreateResponse(HttpStatusCode.BadRequest, "No object Found");
         }
-               
 
-        [FunctionName("SaveFacebookUser")]
-        public static async Task<HttpResponseMessage> SaveFacebookUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "saveFacebookUser")]HttpRequestMessage req, TraceWriter log)
+        [FunctionName("SaveFacebookNewUser")]
+        public static async Task<HttpResponseMessage> SaveFacebookUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "saveFacebookUser")]HttpRequestMessage req, TraceWriter log)
         {
-            string code = req.GetQueryNameValuePairs()
-                .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
-                .Value;
+            string Entity = "infi.Users";
+            string PrimaryKey = "id";
+            QueryHelper<User> userQueryHelper = new QueryHelper<User>();
+            QueryHelper<UserProfile> userProfileQueryHelper = new QueryHelper<UserProfile>();
+            var jsonString = await req.Content.ReadAsStringAsync();
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                UserFacebookProfile objectData = JsonConvert.DeserializeObject<UserFacebookProfile>(jsonString);
 
-            var param = req.GetQueryNameValuePairs();
-            FacebookLoginHelper facebookLoginHelper = new FacebookLoginHelper();
-            return await facebookLoginHelper.StoreFacebookUserData(req, code);
+                List<KeyValuePair<string, string>> parameter = new List<KeyValuePair<string, string>>();
+                parameter.Add(new KeyValuePair<string, string>("emailId", objectData.Email));
 
+                List<User> userDetail = userQueryHelper.Select(parameter, null, null, null, null, "infi.Users");
+                if (userDetail == null || userDetail.Count == 0)
+                {
+                    User newUser = new User() { username = objectData.Name, status = 1, emailId = objectData.Email, accountTypeId = 1, createdAt = DateTime.UtcNow };
+                    var newUserDetail = userQueryHelper.Insert(JObject.FromObject(newUser), Entity, PrimaryKey);
+                    UserProfile newUserProfile = new UserProfile() { emailId = objectData.Email, gender = objectData.Gender, firstName = objectData.FirstName, lastName = objectData.LastName, userId = newUserDetail.First().id, createdAt = DateTime.UtcNow };
+                    userProfileQueryHelper.Insert(JObject.FromObject(newUserProfile), "infi.UserProfiles", PrimaryKey);
+                    userDetail.AddRange(newUserDetail);
+                }
+                return userDetail != null && userDetail.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, userDetail) : req.CreateResponse(HttpStatusCode.Unauthorized);
+            }
+            return req.CreateResponse(HttpStatusCode.BadRequest, "No object Found");
         }
 
-        [FunctionName("MicrosoftVerification")]
-        public static async Task<HttpResponseMessage> MicrosoftVerification([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "microsoftVerification")]HttpRequestMessage req, TraceWriter log)
-        {
-            //string code = req.GetQueryNameValuePairs()
-            //    .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
-            //    .Value;
-            MicrosoftLoginHelper microsoftLoginHelper = new MicrosoftLoginHelper();
-            return await microsoftLoginHelper.StoreMicrosftUserData(req, null);
 
-        }
+        //[FunctionName("SaveFacebookUser")]
+        //public static async Task<HttpResponseMessage> SaveFacebookUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "saveFacebookUser")]HttpRequestMessage req, TraceWriter log)
+        //{
+        //    string code = req.GetQueryNameValuePairs()
+        //        .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
+        //        .Value;
+
+        //    var param = req.GetQueryNameValuePairs();
+        //    FacebookLoginHelper facebookLoginHelper = new FacebookLoginHelper();
+        //    return await facebookLoginHelper.StoreFacebookUserData(req, code);
+
+        //}
+
+        //[FunctionName("MicrosoftVerification")]
+        //public static async Task<HttpResponseMessage> MicrosoftVerification([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "microsoftVerification")]HttpRequestMessage req, TraceWriter log)
+        //{
+        //    //string code = req.GetQueryNameValuePairs()
+        //    //    .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
+        //    //    .Value;
+        //    MicrosoftLoginHelper microsoftLoginHelper = new MicrosoftLoginHelper();
+        //    return await microsoftLoginHelper.StoreMicrosftUserData(req, null);
+
+        //}
 
 
     }

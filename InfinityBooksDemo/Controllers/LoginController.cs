@@ -18,7 +18,26 @@ namespace InfinityBooksDemo.Controllers
 {
     public class LoginController : Controller
     {
-        
+
+        private string googleClientId;
+        private string googleclientSecret;
+        private string facebookClientId;
+        private string facebookClientSecret;
+        private string microsoftClientId;
+        private string microsoftClientSecret;
+        private string redirectUri;       
+
+        public LoginController()
+        {
+            googleClientId = ConfigurationManager.AppSettings["GoogleClientId"];
+            redirectUri=ConfigurationManager.AppSettings["RedirectUri"];
+            googleclientSecret = ConfigurationManager.AppSettings["GoogleClientSecret"];
+            facebookClientId= ConfigurationManager.AppSettings["FacebookClientId"];
+            facebookClientSecret = ConfigurationManager.AppSettings["FacebookClientSecret"];
+            microsoftClientId = ConfigurationManager.AppSettings["MicrosoftClientId"];
+            microsoftClientSecret = ConfigurationManager.AppSettings["MicrosoftClientSecret"];
+        }
+
         public async System.Threading.Tasks.Task<ActionResult> UserLogin(string email, string password)
         {
             TelemetryClient tClient = new TelemetryClient(new TelemetryConfiguration("5b3786e8-3c01-4f85-8891-4970e8113389"));
@@ -54,7 +73,7 @@ namespace InfinityBooksDemo.Controllers
                 }
                 if(result.StatusCode==System.Net.HttpStatusCode.Unauthorized)
                 {
-                    ModelState.AddModelError(string.Empty, "User is not authorize");
+                    ViewBag.ErrorMessage = "Invalid User or Password";
                 }
                 else
                 {                   
@@ -67,106 +86,164 @@ namespace InfinityBooksDemo.Controllers
             return View();
         }
 
-        public ActionResult UserGoogleLoginHelper(string code)
+
+        public RedirectResult UserMicrosoftLogin()
         {
-            GoogleLoginHelper helper = new GoogleLoginHelper();
-            var res = helper.StoreGoogleUserData(code);
-            return null;
+            string microsoftLoginuri = ConfigurationManager.AppSettings["MicrosoftLoginUri"].Replace("{clientId}", microsoftClientId).Replace("{redirectUri}", string.Concat(redirectUri, "MicrosoftDataProcess"));
+            return Redirect(microsoftLoginuri);
         }
 
-        public async Task<ActionResult> UserGoogleLogin()
+        public async Task<ActionResult> MicrosoftDataProcess(string code)
         {
-           // Request.Re
-            WebRequestHandler handler = new WebRequestHandler();
-            handler.CookieContainer = new System.Net.CookieContainer();
-            handler.UseCookies = true;
-            handler.UseDefaultCredentials = true;
-            IEnumerable<User> user = null;
-            using (var client = new HttpClient(handler))
+            GoogleLoginHelper googleHelper = new GoogleLoginHelper();
+            var userData = googleHelper.StoreGoogleUserData(code, googleClientId, googleclientSecret, string.Concat(redirectUri, "GoogleDataProcess")).Result;
+            if (userData != null)
             {
-                client.BaseAddress = new Uri("http://localhost:7071/api/googleVerification");
-                //HTTP GET
-                var responseTask = client.GetAsync("googleVerification");
-                //var responseTask = client.GetAsync("cart");
-                responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
+                IEnumerable<User> user = null;
+                using (var client = new HttpClient())
                 {
-                    //int count = handler.CookieContainer.Count;
-                    //Cookie serverCookie = handler.CookieContainer.
-                    //                      GetCookies(new Uri("http://localhost:7071/api/auth"))
-                    //                      ["userId"];
+                    if (userData != null)
+                    {
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        var json = JsonConvert.SerializeObject(userData);
 
-                    var res = result.Content.ReadAsByteArrayAsync().Result;
-                    var bytesAsString = Encoding.UTF8.GetString(res);
-                    return base.Content(bytesAsString, "text/html");
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
+                        responseTask.Wait();
 
-                    //var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
-                    //user = readTask;
-                    //Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                    //return RedirectToAction("Products", "Products");
-                }
-                if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    ModelState.AddModelError(string.Empty, "User is not authorize");
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;
+                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Session.Add("userId", Convert.ToString(readTask.First().id));
+                            return RedirectToAction("Products", "Products");
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "Invalid User or Password";
+                        }
+                        else
+                        {
+                            user = Enumerable.Empty<User>();
 
-                    user = Enumerable.Empty<User>();
-
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                    }
                 }
             }
-            return View();
+            ViewBag.ErrorMessage = "Invalid User or Password";
+            return View("UserLogin");
         }
 
-        public async Task<ActionResult> UserFacebookLogin()
+        public RedirectResult UserGoogleLogin()
         {
-            WebRequestHandler handler = new WebRequestHandler();
-            handler.CookieContainer = new System.Net.CookieContainer();
-            handler.UseCookies = true;
-            handler.UseDefaultCredentials = true;
-            IEnumerable<User> user = null;
-            using (var client = new HttpClient(handler))
+            string googleLoginuri = ConfigurationManager.AppSettings["GoogleLoginuri"].Replace("{clientId}", googleClientId).Replace("{redirectUri}", string.Concat(redirectUri, "GoogleDataProcess"));
+            return Redirect(googleLoginuri);
+        }
+
+
+        public async Task<ActionResult> GoogleDataProcess(string code)
+        {
+            GoogleLoginHelper googleHelper = new GoogleLoginHelper();
+            var userData=googleHelper.StoreGoogleUserData(code, googleClientId, googleclientSecret, string.Concat(redirectUri, "GoogleDataProcess")).Result;
+            if (userData != null)
             {
-                client.BaseAddress = new Uri("http://localhost:7071/api/");
-                //HTTP GET
-                var responseTask = client.GetAsync("facebookVerification");
-                //var responseTask = client.GetAsync("cart");
-                //responseTask.Wait();
-
-                var result = responseTask.Result;
-                if (result.IsSuccessStatusCode)
+                IEnumerable<User> user = null;
+                using (var client = new HttpClient())
                 {
-                    //int count = handler.CookieContainer.Count;
-                    //Cookie serverCookie = handler.CookieContainer.
-                    //                      GetCookies(new Uri("http://localhost:7071/api/auth"))
-                    //                      ["userId"];
-                    var res = result.Content.ReadAsByteArrayAsync().Result;
-                    var bytesAsString = Encoding.UTF8.GetString(res);
-                    return base.Content(bytesAsString, "text/html");
-                    var readTask = JsonConvert.DeserializeObject<List<User>>(bytesAsString);
-                    user = readTask;
-                    Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                    return RedirectToAction("Products", "Products");
-                }
-                if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    ModelState.AddModelError(string.Empty, "User is not authorize");
-                }
-                else //web api sent error response 
-                {
-                    //log response status here..
+                    if (userData != null)
+                    {
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        var json = JsonConvert.SerializeObject(userData);
 
-                    user = Enumerable.Empty<User>();
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
+                        responseTask.Wait();
 
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;
+                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Session.Add("userId", Convert.ToString(readTask.First().id));
+                            return RedirectToAction("Products", "Products");
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "Invalid User or Password";
+                        }
+                        else
+                        {
+                            user = Enumerable.Empty<User>();
+
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                    }
                 }
             }
-            return View();
+            ViewBag.ErrorMessage = "Invalid User or Password";
+            return View("UserLogin");
+        }
+
+        public RedirectResult UserFacebookLogin()
+        {
+            string facebookLoginuri = ConfigurationManager.AppSettings["FavebookLoginUrl"].Replace("{clientId}", facebookClientId).Replace("{redirectUri}", string.Concat(redirectUri, "FacebookDataProcess"));
+            return Redirect(facebookLoginuri);
+        }
+
+
+        public async Task<ActionResult> FacebookDataProcess(string code)
+        {
+            FacebookLoginHelper facebookHelper = new FacebookLoginHelper();
+            var userData = facebookHelper.StoreFacebookUserData(code, facebookClientId, facebookClientSecret, string.Concat(redirectUri, "FacebookDataProcess")).Result;
+
+            if (userData != null)
+            {
+                IEnumerable<User> user = null;
+                using (var client = new HttpClient())
+                {
+                    if (userData != null)
+                    {
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        var json = JsonConvert.SerializeObject(userData);
+
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                        var responseTask = client.PostAsync("saveFacebookUser", stringContent);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;
+                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Session.Add("userId", Convert.ToString(readTask.First().id));
+                            return RedirectToAction("Products", "Products");
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "Invalid User or Password";
+                        }
+                        else
+                        {
+                            user = Enumerable.Empty<User>();
+
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                    }
+                }
+            }
+            ViewBag.ErrorMessage = "Invalid User or Password";
+            return View("UserLogin");
         }
     }
 }

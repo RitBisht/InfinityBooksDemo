@@ -18,12 +18,15 @@ namespace InfinityBooksFunctionApp.Helper
         string dbAccessToken;
         public QueryHelper()
         {
+
             connectionString = Environment.GetEnvironmentVariable("SQLConnectionString");
-            var accessToken = (new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net/").Result; 
+            var accessToken = (new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net", "https://management.azure.com/").ConfigureAwait(false);
+
+           // var accessToken = (new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net").Result; 
            /// bo= Environment.GetEnvironmentVariable("SQLConnectionString", EnvironmentVariableTarget.Process);
             //connectionString = "Server=tcp:infibooksserver.database.windows.net,1433;Initial Catalog=infiBooksDatabase;Persist Security Info=False;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
             builder = new QueryBuilder<T>();
-            dbAccessToken=(new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net").Result;
+          //  dbAccessToken=(new AzureServiceTokenProvider()).GetAccessTokenAsync("https://database.windows.net").Result;
         }
         #region SelectTableData
         public List<T> Select(IEnumerable<KeyValuePair<string, string>> parameters, string defaultOrderBy, string viewName, string accessControlclause, string pagingSortKey, string Entity)
@@ -62,7 +65,7 @@ namespace InfinityBooksFunctionApp.Helper
         #region QueryRunnerForGet/Put/Post
         public IEnumerable<T> RunQuery(Query query)
         {
-            using (var connection = new SqlConnection(connectionString))
+            using (var connection = new SqlConnection() {  AccessToken = accessToken, ConnectionString = connectionString })
             {
                 return connection.Query<T>(query.query, query.dynamicParams as object, commandTimeout: null, commandType: null);
             }
