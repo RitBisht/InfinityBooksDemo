@@ -1,5 +1,4 @@
 ﻿using InfinityBooksDemo.Models;
-using InfinityBooksDemo.Service;
 using Newtonsoft.Json;
 using System;
 using System.Configuration;
@@ -8,24 +7,27 @@ using System.Threading.Tasks;
 
 namespace InfinityBooksDemo.Helper
 {
-    class FacebookLoginHelper
-    {
-        public async Task<UserFacebookProfile> StoreFacebookUserData(string code, string facebookClientId, string facebookClientSecret, string redirectUri)
+    class MicrsoftLoginHelper
+    {    
+        public async Task<UserFacebookProfile> StoreMicrosoftUserData(string code, string facebookClientId, string facebookClientSecret, string redirectUri)
         {
-            if (code == null)
+            if(code==null)
             {
                 return null;
             }
             var httpClient = new HttpClient
             {
-                BaseAddress = new Uri(KeyVaultService.FacebookMapUrl + "/v2.8/")
+                BaseAddress = new Uri(ConfigurationManager.AppSettings["FacebookMapUrl"] + "/v2.8/")
             };
-            var requestUrl = $"/oauth/access_token?authorize?type=client_cred&client_id={facebookClientId}&redirect_uri={redirectUri}&code={code}&client_secret={facebookClientSecret}&fields=id,name,email,first_name,last_name,age_range,birthday,gender,locale";
 
+            var requestUrl = $"/oauth/access_token?authorize?type=client_cred&client_id={facebookClientId}&redirect_uri={redirectUri}&code={code}&client_secret={facebookClientSecret}&fields=id,name,email,first_name,last_name,age_range,birthday,gender,locale";
+          
             var req = new HttpRequestMessage(HttpMethod.Get, requestUrl);
             var response = httpClient.SendAsync(req).Result;
-            var token = JsonConvert.DeserializeObject<FacebookToken>(await response.Content.ReadAsStringAsync());
-            var detail = GetuserProfile(token.AccessToken).Result;
+            var token= JsonConvert.DeserializeObject<FacebookToken>(await response.Content.ReadAsStringAsync());
+
+            var detail =GetuserProfile(token.AccessToken).Result;
+
             return detail;
         }
 
@@ -33,11 +35,11 @@ namespace InfinityBooksDemo.Helper
         {
             var httpClient = new HttpClient
             {
-                BaseAddress = new Uri(KeyVaultService.FacebookMapUrl)
+                BaseAddress = new Uri(ConfigurationManager.AppSettings["FacebookMapUrl"])
             };
             string url = $"/me?access_token={accesstoken}&fields=id,name,email,first_name,last_name,age_range,birthday,gender,locale";
             var response = httpClient.GetAsync(url).Result;
-            var res = response.Content.ReadAsStringAsync().Result;
+            var res =response.Content.ReadAsStringAsync().Result;
             return JsonConvert.DeserializeObject<UserFacebookProfile>(response.Content.ReadAsStringAsync().Result);
         }
     }

@@ -4,91 +4,92 @@
     
 @Styles.Render("~/Content/rating.css")
 
+<main role="main">
+    <section class="jumbotron text-center mt-5">
+        <div class="container">
+            <h1 class="jumbotron-heading">Product Details</h1>
 
-<div class="container">
+        </div>
+    </section>
+    <div class="container">
 
-    <!-- Portfolio Item Heading -->
-    <h1 class="my-4">
-        @Model.name
-    </h1>
+      
 
-    <!-- Portfolio Item Row -->
-    <div class="row">
+        <!-- Portfolio Item Row -->
+        <div class="row">
 
-        <div class="col-md-6">
-            <div id="demo" class="carousel slide" data-ride="carousel">
+            <div class="col-md-6">
+                <div id="demo" class="carousel slide" data-ride="carousel">
 
-               
 
-                <!-- The slideshow -->
-                <div class="carousel-inner">
 
-                    @for (int i = 0; i < Model.productImages.Count; i++)
-                    {
-                        if (i == 0)
+                    <!-- The slideshow -->
+                    <div class="carousel-inner">
+
+                        @for (int i = 0; i < Model.productImages.Count; i++)
                         {
-                            <div class="carousel-item active">
-                                <img src="@Model.productImages[i].blobimagePath" width="100%" height="500" style="object-fit:contain">
-                            </div>
+                            if (i == 0)
+                            {
+                                <div class="carousel-item active">
+                                    <img src="@Model.productImages[i].blobimagePath" width="100%" height="500" style="object-fit:contain">
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="carousel-item">
+                                    <img src="@Model.productImages[i].blobimagePath" width="100%" height="500" style="object-fit:contain">
+                                </div>
+                            }
                         }
-                        else
-                        {
-                            <div class="carousel-item">
-                                <img src="@Model.productImages[i].blobimagePath" width="100%" height="500" style="object-fit:contain">
-                            </div>
-                        }
-                    }
 
-                    @*@foreach (var image in Model.productImages)
-                    {
-                        <div class="carousel-item active">
-                            <img src="@image.blobimagePath" width="100%" height="500" style="object-fit:contain">
-                        </div>
+                        @*@foreach (var image in Model.productImages)
+                            {
+                                <div class="carousel-item active">
+                                    <img src="@image.blobimagePath" width="100%" height="500" style="object-fit:contain">
+                                </div>
 
-                    }*@
+                            }*@
+                    </div>
+
+                    <!-- Left and right controls -->
+                    <a class="carousel-control-prev" href="#demo" data-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </a>
+                    <a class="carousel-control-next" href="#demo" data-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </a>
                 </div>
 
-                <!-- Left and right controls -->
-                <a class="carousel-control-prev" href="#demo" data-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                </a>
-                <a class="carousel-control-next" href="#demo" data-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                </a>
+            </div>
+
+            <div class="col-md-6">
+                <h3 class="my-3">@Model.name</h3>
+                <h3 class="my-3">Book Description</h3>
+                <p><b>Author:</b> @Model.author</p>
+                <p><b>ISBN:</b> @Model.productCode</p>
+                <p><b>Product Description:</b> @Model.description</p>               
+                <p><b>Price: </b>@string.Concat("$", Model.saleprice)</p>
+                <span class="heading">User Rating</span>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    if (i <= (int)Math.Round(Model.avgRating))
+                    {
+                        <span class="fa fa-star checked"></span>
+                    }
+                    else
+                    {
+                        <span class="fa fa-star"></span>
+                    }
+
+                }
+                <p class="mt-md-2">
+                    <a href="/UserCart/CartPostAsync/@Model.productId" class="btn btn-primary">Add to Cart</a>
+                </p>
             </div>
 
         </div>
-
-        <div class="col-md-6">
-            <h3 class="my-3">Book Name</h3>
-            <p>@Model.name</p>
-
-            <h3 class="my-3">Book Description</h3>
-            <p><b>Author:</b> @Model.author</p>
-            <p><b>ISBN:</b> @Model.productCode</p>
-            <p><b>Product Description:</b> @Model.description</p>
-            <h3 class="my-3">Price</h3>
-            <p><b>Price: </b>@string.Concat("$", Model.saleprice)</p>
-            <span class="heading">User Rating</span>
-            @for (int i = 1; i <= 5; i++)
-            {
-                if (i <= (int)Math.Round(Model.avgRating))
-                {
-                    <span class="fa fa-star checked"></span>
-                }
-                else
-                {
-                    <span class="fa fa-star"></span>
-                }
-
-            }            
-            <p>
-                <a href="/UserCart/CartPostAsync/@Model.productId" class="btn btn-primary">Add to Cart</a>
-            </p>
-        </div>
+        <!-- /.row -->
+        <!-- Related Projects Row -->
 
     </div>
-    <!-- /.row -->
-    <!-- Related Projects Row -->
-    
-</div>
+</main>

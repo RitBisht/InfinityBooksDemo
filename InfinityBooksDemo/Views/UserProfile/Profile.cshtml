@@ -46,16 +46,16 @@
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">Contact Number</label>
                     <div class="col-sm-10">
-                        @Html.TextBoxFor(m => m.contactNumber, new { @class = "form-control mb-2 mr-sm-2" })
+                        @Html.TextBoxFor(m => m.contactNumber, new { @class = "form-control mb-2 mr-sm-2", type = "number"})
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-sm-2 col-form-label">Gender</label>
                     <div class="col-sm-10">
                         @Html.DropDownListFor(m => m.gender, new List<SelectListItem>
-                              { new SelectListItem{Text="Male", Value="M"},
-                                new SelectListItem{Text="Female", Value="F"},
-                new SelectListItem{Text="Other", Value="O"}}, "Please select", new { @class = "form-control mb-2 mr-sm-2" })
+                              { new SelectListItem{Text="Male", Value="Male"},
+                                new SelectListItem{Text="Female", Value="Female"},
+                new SelectListItem{Text="Other", Value="Other"}}, "Please select", new { @class = "form-control mb-2 mr-sm-2" })
                     </div>
                 </div>
                 <div class="form-group row">
@@ -91,7 +91,7 @@
                 <div class="form-group row">
                     <label for="inputPassword3" class="col-sm-2 col-form-label">Pincode</label>
                     <div class="col-sm-10">
-                        @Html.TextBoxFor(m => m.address.pincode, new { @class = "form-control mb-2 mr-sm-2" })
+                        @Html.TextBoxFor(m => m.address.pincode, new { @class = "form-control mb-2 mr-sm-2" ,type = "number" })
                     </div>
                 </div>
 

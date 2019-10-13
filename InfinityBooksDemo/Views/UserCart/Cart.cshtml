@@ -1,53 +1,51 @@
 ﻿@using InfinityBooksDemo.Models
 
 @model IEnumerable<InfinityBooksDemo.Models.Cart>
-
-@if (Model.Count() > 0)
-{    <div class="album py-5 bg-light">
-        <div class="container">
-
+<div class="album py-5 bg-light">
+    <div class="container">
+        <div class="row">
+            <h1>Your Cart</h1>
+        </div>
+        @if (Model.Count() > 0)
+        {
             <div class="row">
                 @foreach (var cartProduct in Model)
                 {
                     <div class="col-md-4">
                         <div class="card mb-4 shadow-sm">
-                                <img src="@cartProduct.productdetail.productImages[0].blobimagePath" width="100%" height="225" style="object-fit:contain">
-                                <div class="card-body">
-                                    <p class="card-title"> @cartProduct.productdetail.name</p>
-                                    <p class="card-text" style="line-height: 1em;height: 3em;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;width: 100%;"> @cartProduct.productdetail.description</p>
-                                    <p class="card-title">Total Price: $@(cartProduct.quantity * cartProduct.productdetail.saleprice)</p>
-                                    <div class="btn-group col-md-6 float-left">
-                                        <a class="btn btn-sm btn-outline-secondary" href="/UserCart/CartDeleteAsync/@cartProduct.id">DELETE</a>
-                                    </div>
-                                   
-                                    <div class="col-md-6 float-right">
-                                        Quantity:
-                                        @if (cartProduct.quantity > 1)
-                                        {
-                                            <a href="@Url.Action("CartPutAsync", "UserCart", new { id = cartProduct.id, userId = cartProduct.userId, quantity = cartProduct.quantity, productId = cartProduct.productId, operation = "DECREMENT" })"><i class="fa fa-minus"></i></a>
-                                        }
-                                        else
-                                        {
-                                            <a disabled class="disabled" style="color:grey"><i class="fa fa-minus"></i></a>
-                                        }@cartProduct.quantity
-
-                                        <a href="@Url.Action("CartPutAsync", "UserCart", new { id = cartProduct.id,userId= cartProduct.userId, quantity=cartProduct.quantity, productId=cartProduct.productId, operation="INCREMENT"})"><i class="fa fa-plus"></i></a>
-                                    </div>
-
+                            <img src="@cartProduct.productdetail.productImages[0].blobimagePath" width="100%" height="225" style="object-fit:contain">
+                            <div class="card-body">
+                                <p class="card-title"> @cartProduct.productdetail.name</p>
+                                <p class="card-text" style="line-height: 1em;height: 3em;overflow: hidden;white-space: nowrap;text-overflow: ellipsis;width: 100%;"> @cartProduct.productdetail.description</p>
+                                <p class="card-title">Total Price: $@(cartProduct.quantity * cartProduct.productdetail.saleprice)</p>
+                                <div class="btn-group col-md-6 float-left">
+                                    <a class="btn btn-sm btn-outline-secondary" href="/UserCart/CartDeleteAsync/@cartProduct.id">DELETE</a>
                                 </div>
+
+                                <div class="col-md-6 float-right">
+                                    Quantity:
+                                    @if (cartProduct.quantity > 1)
+                                    {
+                                        <a href="@Url.Action("CartPutAsync", "UserCart", new { id = cartProduct.id, userId = cartProduct.userId, quantity = cartProduct.quantity, productId = cartProduct.productId, operation = "DECREMENT" })"><i class="fa fa-minus"></i></a>
+                                    }
+                                    else
+                                    {
+                                        <a disabled class="disabled" style="color:grey"><i class="fa fa-minus"></i></a>
+                                    }@cartProduct.quantity
+
+                                    <a href="@Url.Action("CartPutAsync", "UserCart", new { id = cartProduct.id,userId= cartProduct.userId, quantity=cartProduct.quantity, productId=cartProduct.productId, operation="INCREMENT"})"><i class="fa fa-plus"></i></a>
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 }
             </div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="col-md-4">
-        <div class="card mb-4 shadow-sm">
-            <h4>Cart is Empty</h4>            
-        </div>
-    </div>
-}
 
+        }
+        else
+        {
+            <p>No products added</p>
+        }
+    </div>
+</div>

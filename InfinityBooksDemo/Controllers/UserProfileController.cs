@@ -9,6 +9,7 @@ using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Configuration;
+using System.Net;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -19,60 +20,24 @@ namespace InfinityBooksDemo.Controllers
         {
             return View("Register");
         }
-        // GET: Login
+        
         [HttpPost]
         public async System.Threading.Tasks.Task<ActionResult> UserRegisterPost(UserProfile userProfile)
         {
-                IEnumerable<UserProfile> user = null;
+            IEnumerable<UserProfile> user = null;
             using (var client = new HttpClient())
             {
                 if (userProfile != null)
-                {                   
-                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-
-                    var json = JsonConvert.SerializeObject(userProfile);
-
-                    var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                    //HTTP GET
-                    var responseTask = client.PostAsync("userProfile", stringContent);
-                    responseTask.Wait();
-
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
+                {
+                    try
                     {
-                        var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
-                        user = readTask;
-                        Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().userId)));
-                        Session.Add("userId", Convert.ToString(user.First().userId));
-                        return RedirectToAction("Products", "Products");
-                    }
-                    if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                    {
-                        ModelState.AddModelError(string.Empty, "User is not authorize");
-                    }
-                    else //web api sent error response 
-                    {
-                        //log response status here..
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
 
-                        user = Enumerable.Empty<UserProfile>();
+                        var json = JsonConvert.SerializeObject(userProfile);
 
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                    }
-                }
-            }
-            return RedirectToAction("UserLogin", "Login");
-        }
-
-        public async Task<ActionResult> UserProfileGet()       
-        {
-            if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
-            {
-            
-            IEnumerable<UserProfile> user;
-                    using (var client = new HttpClient())
-                    {
-                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                        var responseTask = client.GetAsync("userProfile?userId="+ Request.Cookies["userId"].Value);
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                        //HTTP GET
+                        var responseTask = client.PostAsync("userProfile", stringContent);
                         responseTask.Wait();
 
                         var result = responseTask.Result;
@@ -80,22 +45,71 @@ namespace InfinityBooksDemo.Controllers
                         {
                             var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
                             user = readTask;
-                            //Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
-                            return View("profile",user.First());
+                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().userId)));
+                            Session.Add("userId", Convert.ToString(user.First().userId));
+                            return RedirectToAction("Products", "Products");
                         }
                         if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                         {
-                            ModelState.AddModelError(string.Empty, "User is not authorize");
+                            ViewBag.ErrorMessage = "User is not authorize";
                         }
-                        else //web api sent error response 
+                        if (result.StatusCode == HttpStatusCode.Conflict)
                         {
-                            //log response status here..
-                            user = Enumerable.Empty<UserProfile>();
+                            ViewBag.ErrorMessage = "User already exist";
+                        }
 
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        else
+                        {
+                            user = Enumerable.Empty<UserProfile>();
+                            ViewBag.ErrorMessage = "Server error. Please contact administrator.";
                         }
                     }
-                
+                    catch(Exception ex)
+                    {
+                        ViewBag.ErrorMessage = ex.Message;
+                    }
+                }
+            }
+            return View("Register");
+        }
+
+        public async Task<ActionResult> UserProfileGet()
+        {
+            if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
+            {
+
+                IEnumerable<UserProfile> user;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                    try
+                    {
+                        var responseTask = client.GetAsync("userProfile?userId=" + Request.Cookies["userId"].Value);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;                          
+                            return View("profile", user.First());
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "User is not authorize";
+                        }
+                        else 
+                        {                           
+                            user = Enumerable.Empty<UserProfile>();
+                            ViewBag.ErrorMessage = "Server error. Please contact administrator.";
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        ViewBag.ErrorMessage = ex.Message;
+                    }
+                }
+
             }
             return RedirectToAction("UserLogin", "Login");
         }
@@ -105,7 +119,7 @@ namespace InfinityBooksDemo.Controllers
         {
             if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-            IEnumerable<UserProfile> user;
+                IEnumerable<UserProfile> user;
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
@@ -114,26 +128,31 @@ namespace InfinityBooksDemo.Controllers
                     var json = JsonConvert.SerializeObject(userProfile);
 
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                    //HTTP GET
-                    var responseTask = client.PutAsync("userProfile", stringContent);
-                    responseTask.Wait();
+                    try
+                    {
+                        var responseTask = client.PutAsync("userProfile", stringContent);
+                        responseTask.Wait();
 
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
-                    {
-                        var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
-                        user = readTask;
-                        //Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(user.First().id)));
-                        return RedirectToAction("Products", "Products");
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<UserProfile>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;                           
+                            return RedirectToAction("Products", "Products");
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "User is not authorize";
+                        }
+                        else
+                        {
+                            user = Enumerable.Empty<UserProfile>();
+                            ViewBag.ErrorMessage = "Server error. Please contact administrator.";
+                        }
                     }
-                    if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                    catch(Exception ex)
                     {
-                        ModelState.AddModelError(string.Empty, "User is not authorize");
-                    }
-                    else
-                    {
-                        user = Enumerable.Empty<UserProfile>();
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        ViewBag.ErrorMessage = ex.Message;
                     }
                 }
 

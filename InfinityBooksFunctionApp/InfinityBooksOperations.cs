@@ -53,7 +53,7 @@ namespace InfinityBooksFunctionApp
                 }
                 else
                 {
-                    req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
+                    return req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
                 }
                 //return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData).Headers.AddCookies(new CookieHeaderValue[] { cookie}) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
 
@@ -172,33 +172,37 @@ namespace InfinityBooksFunctionApp
                     qParameters.Add(new KeyValuePair<string, string>("emailId", objectData.emailId));
                     //qParameters.Add(new KeyValuePair<string, string>("addressTypeId", "1"));
                     var userSearch = userHelper.Select(qParameters, null, null, null, null, "infi.Users");
-                    if (userSearch == null || userSearch.Count == 0)
+                    if (userSearch != null || userSearch.Count > 0)
                     {
-                        req.CreateResponse(HttpStatusCode.Conflict);
+                        return req.CreateResponse(HttpStatusCode.Conflict);
                     }
 
-                }
 
-                var newUser = new User() { emailId = objectData.emailId, password = objectData.password, status = 1 };
-                var userResult = userHelper.Insert(JObject.FromObject(newUser), "infi.Users", "id");
 
-                objectData.userId = userResult.First().id;
+                    var newUser = new User() { emailId = objectData.emailId, password = objectData.password, status = 1 };
+                    var userResult = userHelper.Insert(JObject.FromObject(newUser), "infi.Users", "id");
 
-                var resultData = userProfileHelper.Insert(JObject.FromObject(objectData), Entity, PrimaryKey);
+                    objectData.userId = userResult.First().id;
 
-                if (resultData != null)
-                {
+                    var resultData = userProfileHelper.Insert(JObject.FromObject(objectData), Entity, PrimaryKey);
 
-                    if (objectData.address != null)
+                    if (resultData != null)
                     {
-                        var add = objectData.address;
-                        add.userId = resultData.First().userId;
-                        add.status = 1;
-                        add.addressTypeId = 1;
-                        addressQueryHelper.Insert(JObject.FromObject(add), "infi.addresses", "addressesId");
+
+                        if (objectData.address != null)
+                        {
+                            var add = objectData.address;
+                            add.userId = resultData.First().userId;
+                            add.status = 1;
+                            add.addressTypeId = 1;
+                            addressQueryHelper.Insert(JObject.FromObject(add), "infi.addresses", "addressesId");
+                        }
                     }
+                    return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
                 }
-                return resultData != null && resultData.Count > 0 ? req.CreateResponse(HttpStatusCode.OK, resultData) : req.CreateResponse(HttpStatusCode.Unauthorized, "Data Not Found");
+
+                return req.CreateResponse(HttpStatusCode.Forbidden, "Field missing");
+
             }
 
             if (string.Equals(reqType, "PUT"))
@@ -318,14 +322,7 @@ namespace InfinityBooksFunctionApp
 
             return await generalHelper.PerformOperationAsync(PrimaryKeyValue);
         }
-
-        //[FunctionName("SaveGoogleUser")]
-        //public static async Task<HttpResponseMessage> SaveGoogleUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "saveGoogleUser")]HttpRequestMessage req, TraceWriter log)
-        //{
-        //   Request.
-
-        //}
-
+       
 
         [FunctionName("SaveGoogleNewUser")]
         public static async Task<HttpResponseMessage> SaveGoogleUser([HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "saveGoogleUser")]HttpRequestMessage req, TraceWriter log)
@@ -384,32 +381,5 @@ namespace InfinityBooksFunctionApp
             }
             return req.CreateResponse(HttpStatusCode.BadRequest, "No object Found");
         }
-
-
-        //[FunctionName("SaveFacebookUser")]
-        //public static async Task<HttpResponseMessage> SaveFacebookUser([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "saveFacebookUser")]HttpRequestMessage req, TraceWriter log)
-        //{
-        //    string code = req.GetQueryNameValuePairs()
-        //        .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
-        //        .Value;
-
-        //    var param = req.GetQueryNameValuePairs();
-        //    FacebookLoginHelper facebookLoginHelper = new FacebookLoginHelper();
-        //    return await facebookLoginHelper.StoreFacebookUserData(req, code);
-
-        //}
-
-        //[FunctionName("MicrosoftVerification")]
-        //public static async Task<HttpResponseMessage> MicrosoftVerification([HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "microsoftVerification")]HttpRequestMessage req, TraceWriter log)
-        //{
-        //    //string code = req.GetQueryNameValuePairs()
-        //    //    .FirstOrDefault(q => string.Compare(q.Key, "code", true) == 0)
-        //    //    .Value;
-        //    MicrosoftLoginHelper microsoftLoginHelper = new MicrosoftLoginHelper();
-        //    return await microsoftLoginHelper.StoreMicrosftUserData(req, null);
-
-        //}
-
-
     }
 }

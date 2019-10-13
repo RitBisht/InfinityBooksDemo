@@ -25,27 +25,34 @@
 <body>
     <header class="mb-5">
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
-            <a class="navbar-brand" href="#">Infinity Books</a>
+            <a class="navbar-brand" style="color:#00f4ff;font-size:30px;" href="/Products/products">Infinity Books</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <ul class="navbar-nav mr-auto">
-                    <li class="nav-item active">
-                        <a class="nav-link" href="/Products/products">Home <span class="sr-only">(current)</span></a>
+                    <li class="nav-item  @(string.Equals(Url.RouteUrl(ViewContext.RouteData.Values), "/") ? "active" : "")">
+                        <a class="nav-link" href="/Products/products">Home</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item @(string.Equals(Url.RouteUrl(ViewContext.RouteData.Values), "/UserCart/CartGetAsync") ? "active" : "")">
                         <a class="nav-link" href="/UserCart/CartGetAsync">Cart</a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item @(string.Equals(Url.RouteUrl(ViewContext.RouteData.Values), "/UserProfile/UserProfileGet") ? "active" : "")">
                         <a class="nav-link" href="/UserProfile/UserProfileGet">Profile</a>
                     </li>
                 </ul>
-                <form class="form-inline mt-2 mt-md-0">
+                <form class="form-inline mt-2 mt-md-0 mr-md-3">
                     <input class="form-control mr-sm-2" id="searchString" name="searchString" type="text" placeholder="Search" aria-label="Search">
                     <button class="btn btn-outline-success my-2 my-sm-0" onclick="@Url.Action("Products", "Products")" type="submit">Search</button>
                 </form>
-                <a href="/Logout/CleanDetails">Logout</a>
+                @if (Request.Cookies.AllKeys.Contains("userId") && !string.IsNullOrEmpty(Request.Cookies["userId"].Value))
+                {
+                    <a href="/Logout/CleanDetails" class="text-danger">Logout</a>
+                }
+                else
+                {
+                    <a href="/Login/UserLogin" style="color:gold">Login</a>
+                }               
             </div>
         </nav>
     </header>

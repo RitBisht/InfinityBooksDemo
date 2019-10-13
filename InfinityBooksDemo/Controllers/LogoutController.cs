@@ -13,7 +13,8 @@ namespace InfinityBooksDemo.Controllers
         {
             Response.Cookies["userId"].Expires = DateTime.Now.AddDays(-1);
             Session["userId"] = null;
-            return RedirectToAction("UserLogin", "Login");
+            ViewBag.Loginned = null;
+            return RedirectToAction("Products", "products");
         }
 
 

@@ -13,6 +13,7 @@ using InfinityBooksDemo.Helper;
 using System.Configuration;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
+using InfinityBooksDemo.Service;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -25,15 +26,15 @@ namespace InfinityBooksDemo.Controllers
         private string facebookClientSecret;
         private string microsoftClientId;
         private string microsoftClientSecret;
-        private string redirectUri;       
+        private string redirectUri;
 
         public LoginController()
         {
-            googleClientId = ConfigurationManager.AppSettings["GoogleClientId"];
-            redirectUri=ConfigurationManager.AppSettings["RedirectUri"];
-            googleclientSecret = ConfigurationManager.AppSettings["GoogleClientSecret"];
-            facebookClientId= ConfigurationManager.AppSettings["FacebookClientId"];
-            facebookClientSecret = ConfigurationManager.AppSettings["FacebookClientSecret"];
+            googleClientId = KeyVaultService.GoogleClientId;
+            redirectUri = ConfigurationManager.AppSettings["RedirectUri"];
+            googleclientSecret = KeyVaultService.GoogleClientSecret;
+            facebookClientId = KeyVaultService.FacebookClientId;
+            facebookClientSecret = KeyVaultService.FacebookClientSecret;
             microsoftClientId = ConfigurationManager.AppSettings["MicrosoftClientId"];
             microsoftClientSecret = ConfigurationManager.AppSettings["MicrosoftClientSecret"];
         }
@@ -47,12 +48,11 @@ namespace InfinityBooksDemo.Controllers
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 {
-                    ViewBag.ErrorMessage = "Field Missing";
                     return View();
                 }
-                var json = JsonConvert.SerializeObject(new User() {emailId= email, password=password });
+                var json = JsonConvert.SerializeObject(new User() { emailId = email, password = password });
 
                 var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                 //HTTP GET
@@ -62,21 +62,22 @@ namespace InfinityBooksDemo.Controllers
 
                 var result = responseTask.Result;
                 if (result.IsSuccessStatusCode)
-                {                    
+                {
                     var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
                     user = readTask;
                     Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
                     Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
                     Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
                     Session.Add("userId", Convert.ToString(readTask.First().id));
-                    return RedirectToAction("Products","Products");
+                    ViewBag.Loginned = true;
+                    return RedirectToAction("Products", "Products");
                 }
-                if(result.StatusCode==System.Net.HttpStatusCode.Unauthorized)
+                if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                 {
                     ViewBag.ErrorMessage = "Invalid User or Password";
                 }
                 else
-                {                   
+                {
                     user = Enumerable.Empty<User>();
 
                     ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
@@ -94,6 +95,61 @@ namespace InfinityBooksDemo.Controllers
         }
 
         public async Task<ActionResult> MicrosoftDataProcess(string code)
+        {
+            GoogleLoginHelper googleHelper = new GoogleLoginHelper();
+            var userData = googleHelper.StoreGoogleUserData(code, googleClientId, googleclientSecret, string.Concat(redirectUri, "GoogleDataProcess")).Result;
+
+            if (userData != null)
+            {
+                IEnumerable<User> user = null;
+                using (var client = new HttpClient())
+                {
+                    if (userData != null)
+                    {
+                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        var json = JsonConvert.SerializeObject(userData);
+
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                            user = readTask;
+                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                            Session.Add("userId", Convert.ToString(readTask.First().id));
+                            ViewBag.Loginned = true;
+                            return RedirectToAction("Products", "Products");
+                        }
+                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        {
+                            ViewBag.ErrorMessage = "Invalid User or Password";
+                        }
+                        else
+                        {
+                            user = Enumerable.Empty<User>();
+
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                    }
+                }
+            }
+            ViewBag.ErrorMessage = "Invalid User or Password";
+            return View("UserLogin");
+        }
+
+        public RedirectResult UserGoogleLogin()
+        {
+            string googleLoginuri = KeyVaultService.GoogleLoginUrl.Replace("{clientId}", googleClientId).Replace("{redirectUri}", string.Concat(redirectUri, "GoogleDataProcess"));
+            return Redirect(googleLoginuri);
+        }
+
+
+        public async Task<ActionResult> GoogleDataProcess(string code)
         {
             GoogleLoginHelper googleHelper = new GoogleLoginHelper();
             var userData = googleHelper.StoreGoogleUserData(code, googleClientId, googleclientSecret, string.Concat(redirectUri, "GoogleDataProcess")).Result;
@@ -120,59 +176,7 @@ namespace InfinityBooksDemo.Controllers
                             Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
                             Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
                             Session.Add("userId", Convert.ToString(readTask.First().id));
-                            return RedirectToAction("Products", "Products");
-                        }
-                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        {
-                            ViewBag.ErrorMessage = "Invalid User or Password";
-                        }
-                        else
-                        {
-                            user = Enumerable.Empty<User>();
-
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                        }
-                    }
-                }
-            }
-            ViewBag.ErrorMessage = "Invalid User or Password";
-            return View("UserLogin");
-        }
-
-        public RedirectResult UserGoogleLogin()
-        {
-            string googleLoginuri = ConfigurationManager.AppSettings["GoogleLoginuri"].Replace("{clientId}", googleClientId).Replace("{redirectUri}", string.Concat(redirectUri, "GoogleDataProcess"));
-            return Redirect(googleLoginuri);
-        }
-
-
-        public async Task<ActionResult> GoogleDataProcess(string code)
-        {
-            GoogleLoginHelper googleHelper = new GoogleLoginHelper();
-            var userData=googleHelper.StoreGoogleUserData(code, googleClientId, googleclientSecret, string.Concat(redirectUri, "GoogleDataProcess")).Result;
-            if (userData != null)
-            {
-                IEnumerable<User> user = null;
-                using (var client = new HttpClient())
-                {
-                    if (userData != null)
-                    {
-                        client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                        var json = JsonConvert.SerializeObject(userData);
-
-                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
-                        responseTask.Wait();
-
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
-                        {
-                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
-                            user = readTask;
-                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
-                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Session.Add("userId", Convert.ToString(readTask.First().id));
+                            ViewBag.Loginned = true;
                             return RedirectToAction("Products", "Products");
                         }
                         if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -194,7 +198,7 @@ namespace InfinityBooksDemo.Controllers
 
         public RedirectResult UserFacebookLogin()
         {
-            string facebookLoginuri = ConfigurationManager.AppSettings["FavebookLoginUrl"].Replace("{clientId}", facebookClientId).Replace("{redirectUri}", string.Concat(redirectUri, "FacebookDataProcess"));
+            string facebookLoginuri = KeyVaultService.FacebookLoginUrl.Replace("{clientId}", facebookClientId).Replace("{redirectUri}", string.Concat(redirectUri, "FacebookDataProcess"));
             return Redirect(facebookLoginuri);
         }
 
@@ -227,6 +231,7 @@ namespace InfinityBooksDemo.Controllers
                             Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
                             Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
                             Session.Add("userId", Convert.ToString(readTask.First().id));
+                            ViewBag.Loginned = true;
                             return RedirectToAction("Products", "Products");
                         }
                         if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
