@@ -8,6 +8,8 @@ using System.Web;
 using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Configuration;
+using InfinityBooksDemo.Service;
+using System.Net.Http.Headers;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -19,18 +21,21 @@ namespace InfinityBooksDemo.Controllers
         {
             IEnumerable<Product> products = null;
             using (var client = new HttpClient())
-            {
+            {                
                 client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
+
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("subc");
                 HttpResponseMessage res = null;
                 if (searchString != null)
                 {
-                    var responseTask = client.GetAsync("product?searchString=" + searchString);
+                    var responseTask = client.GetAsync("product/?searchString=" + searchString);
                     responseTask.Wait();
                     res = responseTask.Result;
                 }
                 else
                 {
-                    var responseTask = client.GetAsync("product");
+                    var responseTask = client.GetAsync("product/");
                     responseTask.Wait();
                     res = responseTask.Result;
                 }
@@ -53,7 +58,6 @@ namespace InfinityBooksDemo.Controllers
         [Route("id")]
         public async Task<ActionResult> ProductDetail(string id)
         {
-            ViewBag.Loginned = false;
             Product product = null;
 
             if (!string.IsNullOrEmpty(id))
@@ -62,7 +66,8 @@ namespace InfinityBooksDemo.Controllers
                 {
                     IEnumerable<Product> products = null;
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                    //HTTP GET
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
+                    
                     var responseTask = client.GetAsync(string.Concat("product/", id));
                     responseTask.Wait();
 

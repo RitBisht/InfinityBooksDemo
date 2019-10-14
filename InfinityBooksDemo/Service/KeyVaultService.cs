@@ -19,6 +19,7 @@ namespace InfinityBooksDemo.Service
         public static string FacebookClientSecret { get; set; }
         public static string FacebookClientId { get; set; }
         public static string FacebookMapUrl { get; set; }
+        public static string InfiniteApiKey { get; set; }
 
         public static async Task<string> GetToken(string authority,string resource,string scope)
         {

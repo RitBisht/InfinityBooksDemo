@@ -10,6 +10,7 @@ using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Configuration;
 using System.Net;
+using InfinityBooksDemo.Service;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -32,12 +33,13 @@ namespace InfinityBooksDemo.Controllers
                     try
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
 
                         var json = JsonConvert.SerializeObject(userProfile);
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                         //HTTP GET
-                        var responseTask = client.PostAsync("userProfile", stringContent);
+                        var responseTask = client.PostAsync("userProfile/", stringContent);
                         responseTask.Wait();
 
                         var result = responseTask.Result;
@@ -82,9 +84,10 @@ namespace InfinityBooksDemo.Controllers
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                     try
                     {
-                        var responseTask = client.GetAsync("userProfile?userId=" + Request.Cookies["userId"].Value);
+                        var responseTask = client.GetAsync("userProfile/?userId=" + Request.Cookies["userId"].Value);
                         responseTask.Wait();
 
                         var result = responseTask.Result;
@@ -123,6 +126,7 @@ namespace InfinityBooksDemo.Controllers
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                     userProfile.userId = Convert.ToInt32(Request.Cookies["userId"].Value);
                     userProfile.address.userId = userProfile.userId;
                     var json = JsonConvert.SerializeObject(userProfile);
@@ -130,7 +134,7 @@ namespace InfinityBooksDemo.Controllers
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                     try
                     {
-                        var responseTask = client.PutAsync("userProfile", stringContent);
+                        var responseTask = client.PutAsync("userProfile/", stringContent);
                         responseTask.Wait();
 
                         var result = responseTask.Result;

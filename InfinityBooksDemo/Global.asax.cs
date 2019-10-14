@@ -27,7 +27,7 @@ namespace InfinityBooksDemo
             KeyVaultService.FacebookClientId = keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["FacebookVaultClientIdUrl"]).Result.Value;
             KeyVaultService.FacebookClientSecret = keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["FacebookVaultClientSecretUrl"]).Result.Value;
             KeyVaultService.FacebookLoginUrl = keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["FacebookVaultLoginUrl"]).Result.Value;
-            KeyVaultService.FacebookMapUrl = keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["FacebookVaultMapUrl"]).Result.Value; 
-        }
+            KeyVaultService.FacebookMapUrl = keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["FacebookVaultMapUrl"]).Result.Value;
+            KeyVaultService.InfiniteApiKey=keyVault.GetSecretAsync(WebConfigurationManager.AppSettings["InfinityBooksApisKey"]).Result.Value;        }
     }
 }

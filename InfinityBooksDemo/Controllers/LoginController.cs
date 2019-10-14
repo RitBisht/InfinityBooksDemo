@@ -48,6 +48,7 @@ namespace InfinityBooksDemo.Controllers
             using (var client = new HttpClient())
             {
                 client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                 if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
                 {
                     return View();
@@ -56,7 +57,7 @@ namespace InfinityBooksDemo.Controllers
 
                 var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                 //HTTP GET
-                var responseTask = client.PostAsync("auth", stringContent);
+                var responseTask = client.PostAsync("auth/", stringContent);
                 //var responseTask = client.GetAsync("cart");
                 responseTask.Wait();
 
@@ -107,6 +108,7 @@ namespace InfinityBooksDemo.Controllers
                     if (userData != null)
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                         var json = JsonConvert.SerializeObject(userData);
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
@@ -161,6 +163,7 @@ namespace InfinityBooksDemo.Controllers
                     if (userData != null)
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                         var json = JsonConvert.SerializeObject(userData);
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
@@ -216,6 +219,7 @@ namespace InfinityBooksDemo.Controllers
                     if (userData != null)
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                         var json = JsonConvert.SerializeObject(userData);
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");

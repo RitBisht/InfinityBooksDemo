@@ -9,6 +9,7 @@ using System.Web.Mvc;
 using System.Threading.Tasks;
 using System.Text;
 using System.Configuration;
+using InfinityBooksDemo.Service;
 
 namespace InfinityBooksDemo.Controllers
 {
@@ -26,7 +27,8 @@ namespace InfinityBooksDemo.Controllers
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                    string requestUri = string.Concat("cart?userId=", Request.Cookies["userId"].Value);
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
+                    string requestUri = string.Concat("cart/?userId=", Request.Cookies["userId"].Value);
                     var responseTask = client.GetAsync(requestUri);
                     responseTask.Wait();
 
@@ -60,12 +62,13 @@ namespace InfinityBooksDemo.Controllers
                     {
 
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
 
                         var json = JsonConvert.SerializeObject(new Cart() { productId = Convert.ToInt32(id), statusTypeId = 1, userId = Convert.ToInt32(Request.Cookies["userId"].Value), quantity=1 ,createdAt = DateTime.Now });
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                         //HTTP GET
-                        var responseTask = client.PostAsync("cart", stringContent);
+                        var responseTask = client.PostAsync("cart/", stringContent);
                         //var responseTask = client.GetAsync("cart");
                         responseTask.Wait();
 
@@ -99,7 +102,8 @@ namespace InfinityBooksDemo.Controllers
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
-                    if(string.Equals(data.operation,"INCREMENT"))
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
+                    if (string.Equals(data.operation,"INCREMENT"))
                     {
                         data.quantity++;
                     }
@@ -110,7 +114,7 @@ namespace InfinityBooksDemo.Controllers
                     var json = JsonConvert.SerializeObject(data);
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                     //HTTP GET
-                    var responseTask = client.PutAsync("cart", stringContent);
+                    var responseTask = client.PutAsync("cart/", stringContent);
                     responseTask.Wait();
 
                     var result = responseTask.Result;
@@ -141,12 +145,13 @@ namespace InfinityBooksDemo.Controllers
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                    client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
 
                     var json = JsonConvert.SerializeObject(data);
 
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                     //HTTP GET
-                    var responseTask = client.PutAsync("cart", stringContent);
+                    var responseTask = client.PutAsync("cart/", stringContent);
                     responseTask.Wait();
 
                     var result = responseTask.Result;
@@ -179,6 +184,7 @@ namespace InfinityBooksDemo.Controllers
                     using (var client = new HttpClient())
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
+                        client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
 
                         //  var json = JsonConvert.SerializeObject(data);
 
