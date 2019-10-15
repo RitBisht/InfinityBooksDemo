@@ -21,27 +21,36 @@ namespace InfinityBooksDemo.Controllers
         {
             if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-            
-            IEnumerable<Cart> cartProduct = null;
+
+                IEnumerable<Cart> cartProduct = null;
 
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                     client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                     string requestUri = string.Concat("cart/?userId=", Request.Cookies["userId"].Value);
-                    var responseTask = client.GetAsync(requestUri);
-                    responseTask.Wait();
+                    try
+                    {
+                        #region Get user cart data
+                        var responseTask = client.GetAsync(requestUri);
+                        responseTask.Wait();
 
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
-                    {
-                        var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
-                        cartProduct = readTask;
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
+                            cartProduct = readTask;
+                        }
+                        else //web api sent error response 
+                        {
+                            cartProduct = Enumerable.Empty<Cart>();
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                        #endregion
                     }
-                    else //web api sent error response 
+                    catch (Exception ex)
                     {
-                        cartProduct = Enumerable.Empty<Cart>();
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        @ViewBag.InternalErrorMessage = ex.Message;
                     }
                 }
                 return View("Cart", cartProduct);
@@ -55,7 +64,7 @@ namespace InfinityBooksDemo.Controllers
 
             if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-            if (!string.IsNullOrEmpty(id))
+                if (!string.IsNullOrEmpty(id))
                 {
                     IEnumerable<Cart> cartProduct;
                     using (var client = new HttpClient())
@@ -64,27 +73,32 @@ namespace InfinityBooksDemo.Controllers
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
 
-                        var json = JsonConvert.SerializeObject(new Cart() { productId = Convert.ToInt32(id), statusTypeId = 1, userId = Convert.ToInt32(Request.Cookies["userId"].Value), quantity=1 ,createdAt = DateTime.Now });
+                        var json = JsonConvert.SerializeObject(new Cart() { productId = Convert.ToInt32(id), statusTypeId = 1, userId = Convert.ToInt32(Request.Cookies["userId"].Value), quantity = 1, createdAt = DateTime.Now });
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        //HTTP GET
-                        var responseTask = client.PostAsync("cart/", stringContent);
-                        //var responseTask = client.GetAsync("cart");
-                        responseTask.Wait();
-
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
+                        try
                         {
-                            var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
-                            cartProduct = readTask;
+                            #region Add product in user
+                            var responseTask = client.PostAsync("cart/", stringContent);
+                            responseTask.Wait();
+
+                            var result = responseTask.Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
+                                cartProduct = readTask;
+                            }
+                            else
+                            {
+                                cartProduct = Enumerable.Empty<Cart>();
+
+                                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            }
+                            #endregion
                         }
-                        else //web api sent error response 
+                        catch (Exception ex)
                         {
-                            //log response status here..
-
-                            cartProduct = Enumerable.Empty<Cart>();
-
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            @ViewBag.InternalErrorMessage = ex.Message;
                         }
                     }
                     return RedirectToAction("CartGetAsync");
@@ -103,7 +117,8 @@ namespace InfinityBooksDemo.Controllers
                 {
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                     client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
-                    if (string.Equals(data.operation,"INCREMENT"))
+                    #region Update product data in cart
+                    if (string.Equals(data.operation, "INCREMENT"))
                     {
                         data.quantity++;
                     }
@@ -113,24 +128,32 @@ namespace InfinityBooksDemo.Controllers
                     }
                     var json = JsonConvert.SerializeObject(data);
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                    //HTTP GET
-                    var responseTask = client.PutAsync("cart/", stringContent);
-                    responseTask.Wait();
 
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
+                    try
                     {
-                        var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
-                        cartProduct = readTask;
+                        var responseTask = client.PutAsync("cart/", stringContent);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
+                            cartProduct = readTask;
+                        }
+                        else //web api sent error response 
+                        {
+                            cartProduct = Enumerable.Empty<Cart>();
+
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
                     }
-                    else //web api sent error response 
+                    #endregion
+                    catch (Exception ex)
                     {
-                        cartProduct = Enumerable.Empty<Cart>();
-
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        ViewBag.InternalErrorMessage = ex.Message;
                     }
                 }
-            return RedirectToAction("CartGetAsync");
+                return RedirectToAction("CartGetAsync");
             }
             return RedirectToAction("UserLogin", "Login");
         }
@@ -149,22 +172,29 @@ namespace InfinityBooksDemo.Controllers
 
                     var json = JsonConvert.SerializeObject(data);
 
-                    var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                    //HTTP GET
-                    var responseTask = client.PutAsync("cart/", stringContent);
-                    responseTask.Wait();
-
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
+                    var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");                   
+                    try
                     {
-                        var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
-                        cartProduct = readTask;
+                        var responseTask = client.PutAsync("cart/", stringContent);
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<Cart>>(await result.Content.ReadAsStringAsync());
+                            cartProduct = readTask;
+                        }
+                        else //web api sent error response 
+                        {
+                            cartProduct = Enumerable.Empty<Cart>();
+
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
                     }
-                    else //web api sent error response 
+                  
+                    catch (Exception ex)
                     {
-                        cartProduct = Enumerable.Empty<Cart>();
-
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        @ViewBag.InternalErrorMessage = ex.Message;
                     }
                 }
                 return View(cartProduct);
@@ -173,11 +203,11 @@ namespace InfinityBooksDemo.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> CartDeleteAsync( string id)
+        public async Task<ActionResult> CartDeleteAsync(string id)
         {
             if (Request.Cookies.AllKeys.Contains("userId") && Session["userId"] != null && string.Equals(Request.Cookies["userId"].Value, Session["userId"].ToString()))
             {
-            if (!string.IsNullOrEmpty(id))
+                if (!string.IsNullOrEmpty(id))
                 {
                     IEnumerable<Cart> cartProduct = null;
 
@@ -185,24 +215,28 @@ namespace InfinityBooksDemo.Controllers
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
-
-                        //  var json = JsonConvert.SerializeObject(data);
-
-                        //  var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        //HTTP GET
-                        var responseTask = client.DeleteAsync("cart/"+id);
-                        responseTask.Wait();
-
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
+                        #region Delete product from cart
+                        try
                         {
-                            return RedirectToAction("CartGetAsync");
+                            var responseTask = client.DeleteAsync("cart/" + id);
+                            responseTask.Wait();
+
+                            var result = responseTask.Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                return RedirectToAction("CartGetAsync");
+                            }
+                            else
+                            {
+                                cartProduct = Enumerable.Empty<Cart>();
+                                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                                return RedirectToAction("CartGetAsync");
+                            }
                         }
-                        else //web api sent error response 
+                        #endregion
+                        catch (Exception ex)
                         {
-                            cartProduct = Enumerable.Empty<Cart>();
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                            return RedirectToAction("CartGetAsync");
+                            @ViewBag.InternalErrorMessage = ex.Message;
                         }
                     }
                 }

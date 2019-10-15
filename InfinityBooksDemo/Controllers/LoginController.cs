@@ -110,32 +110,38 @@ namespace InfinityBooksDemo.Controllers
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                         var json = JsonConvert.SerializeObject(userData);
-
-                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
-                        responseTask.Wait();
-
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
+                        try
                         {
-                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
-                            user = readTask;
-                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
-                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Session.Add("userId", Convert.ToString(readTask.First().id));
-                            ViewBag.Loginned = true;
-                            return RedirectToAction("Products", "Products");
+                            var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                            var responseTask = client.PostAsync("saveGoogleUser", stringContent);
+                            responseTask.Wait();
+
+                            var result = responseTask.Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                                user = readTask;
+                                Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                                Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Session.Add("userId", Convert.ToString(readTask.First().id));
+                                ViewBag.Loginned = true;
+                                return RedirectToAction("Products", "Products");
+                            }
+                            if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                            {
+                                ViewBag.ErrorMessage = "Invalid User or Password";
+                            }
+                            else
+                            {
+                                user = Enumerable.Empty<User>();
+
+                                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            }
                         }
-                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                        catch(Exception ex)
                         {
-                            ViewBag.ErrorMessage = "Invalid User or Password";
-                        }
-                        else
-                        {
-                            user = Enumerable.Empty<User>();
-
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            ViewBag.InternalErrorMessage = ex.Message;
                         }
                     }
                 }
@@ -160,6 +166,7 @@ namespace InfinityBooksDemo.Controllers
                 IEnumerable<User> user = null;
                 using (var client = new HttpClient())
                 {
+
                     if (userData != null)
                     {
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
@@ -167,30 +174,37 @@ namespace InfinityBooksDemo.Controllers
                         var json = JsonConvert.SerializeObject(userData);
 
                         var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        var responseTask = client.PostAsync("saveGoogleUser", stringContent);
-                        responseTask.Wait();
+                        try
+                        {
+                            var responseTask = client.PostAsync("saveGoogleUser", stringContent);
+                            responseTask.Wait();
 
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
-                        {
-                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
-                            user = readTask;
-                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
-                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Session.Add("userId", Convert.ToString(readTask.First().id));
-                            ViewBag.Loginned = true;
-                            return RedirectToAction("Products", "Products");
-                        }
-                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        {
-                            ViewBag.ErrorMessage = "Invalid User or Password";
-                        }
-                        else
-                        {
-                            user = Enumerable.Empty<User>();
+                            var result = responseTask.Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                                user = readTask;
+                                Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                                Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Session.Add("userId", Convert.ToString(readTask.First().id));
+                                ViewBag.Loginned = true;
+                                return RedirectToAction("Products", "Products");
+                            }
+                            if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                            {
+                                ViewBag.ErrorMessage = "Invalid User or Password";
+                            }
+                            else
+                            {
+                                user = Enumerable.Empty<User>();
 
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewBag.InternalErrorMessage = ex.Message;
                         }
                     }
                 }
@@ -222,31 +236,38 @@ namespace InfinityBooksDemo.Controllers
                         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                         var json = JsonConvert.SerializeObject(userData);
 
-                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        var responseTask = client.PostAsync("saveFacebookUser", stringContent);
-                        responseTask.Wait();
+                        try
+                        {
+                            var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
+                            var responseTask = client.PostAsync("saveFacebookUser", stringContent);
+                            responseTask.Wait();
 
-                        var result = responseTask.Result;
-                        if (result.IsSuccessStatusCode)
-                        {
-                            var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
-                            user = readTask;
-                            Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
-                            Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
-                            Session.Add("userId", Convert.ToString(readTask.First().id));
-                            ViewBag.Loginned = true;
-                            return RedirectToAction("Products", "Products");
-                        }
-                        if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                        {
-                            ViewBag.ErrorMessage = "Invalid User or Password";
-                        }
-                        else
-                        {
-                            user = Enumerable.Empty<User>();
+                            var result = responseTask.Result;
+                            if (result.IsSuccessStatusCode)
+                            {
+                                var readTask = JsonConvert.DeserializeObject<List<User>>(await result.Content.ReadAsStringAsync());
+                                user = readTask;
+                                Response.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Response.Cookies["userId"].Expires = DateTime.Now.AddSeconds(600);
+                                Request.Cookies.Add(new HttpCookie("userId", Convert.ToString(readTask.First().id)));
+                                Session.Add("userId", Convert.ToString(readTask.First().id));
+                                ViewBag.Loginned = true;
+                                return RedirectToAction("Products", "Products");
+                            }
+                            if (result.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                            {
+                                ViewBag.ErrorMessage = "Invalid User or Password";
+                            }
+                            else
+                            {
+                                user = Enumerable.Empty<User>();
 
-                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                                ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewBag.InternalErrorMessage = ex.Message;
                         }
                     }
                 }

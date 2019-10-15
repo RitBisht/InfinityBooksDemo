@@ -10,11 +10,20 @@
 
         </div>
     </section>
+    @if (ViewBag.InternalErrorMessage != null)
+    {
+        <div class="album py-5 bg-light">
+            <div class="container">
+                <div class="row">
+                    @ViewBag.InternalErrorMessage
+                </div>
+            </div>
+        </div>
+    }
     @if (Model.Count() > 0)
     {
         <div class="album py-5 bg-light">
             <div class="container">
-
                 <div class="row">
                     @foreach (var product in Model)
                     {
@@ -45,6 +54,6 @@
     {
         <p class="text-center">No Product Found</p>
     }
-    </main>
-    
+</main>
+
 

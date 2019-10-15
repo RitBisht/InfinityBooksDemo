@@ -32,13 +32,11 @@ namespace InfinityBooksDemo.Controllers
                 {
                     try
                     {
+                        #region Validating and saving user Data
                         client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                         client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
-
                         var json = JsonConvert.SerializeObject(userProfile);
-
-                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
-                        //HTTP GET
+                        var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");                       
                         var responseTask = client.PostAsync("userProfile/", stringContent);
                         responseTask.Wait();
 
@@ -59,14 +57,14 @@ namespace InfinityBooksDemo.Controllers
                         {
                             ViewBag.ErrorMessage = "User already exist";
                         }
-
                         else
                         {
                             user = Enumerable.Empty<UserProfile>();
                             ViewBag.ErrorMessage = "Server error. Please contact administrator.";
                         }
+                        #endregion
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         ViewBag.ErrorMessage = ex.Message;
                     }
@@ -87,6 +85,7 @@ namespace InfinityBooksDemo.Controllers
                     client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
                     try
                     {
+                        #region Fetching user data
                         var responseTask = client.GetAsync("userProfile/?userId=" + Request.Cookies["userId"].Value);
                         responseTask.Wait();
 
@@ -106,8 +105,9 @@ namespace InfinityBooksDemo.Controllers
                             user = Enumerable.Empty<UserProfile>();
                             ViewBag.ErrorMessage = "Server error. Please contact administrator.";
                         }
+                        #endregion
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         ViewBag.ErrorMessage = ex.Message;
                     }
@@ -134,6 +134,7 @@ namespace InfinityBooksDemo.Controllers
                     var stringContent = new StringContent(json, UnicodeEncoding.UTF8, "application/json");
                     try
                     {
+                        #region Validating and updating user data
                         var responseTask = client.PutAsync("userProfile/", stringContent);
                         responseTask.Wait();
 
@@ -153,8 +154,9 @@ namespace InfinityBooksDemo.Controllers
                             user = Enumerable.Empty<UserProfile>();
                             ViewBag.ErrorMessage = "Server error. Please contact administrator.";
                         }
+                        #endregion
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         ViewBag.ErrorMessage = ex.Message;
                     }

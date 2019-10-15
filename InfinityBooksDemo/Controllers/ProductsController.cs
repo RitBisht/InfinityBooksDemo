@@ -24,30 +24,35 @@ namespace InfinityBooksDemo.Controllers
             {                
                 client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                 client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
-
-                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("subc");
                 HttpResponseMessage res = null;
-                if (searchString != null)
+                try
                 {
-                    var responseTask = client.GetAsync("product/?searchString=" + searchString);
-                    responseTask.Wait();
-                    res = responseTask.Result;
+                    if (searchString != null)
+                    {
+                        var responseTask = client.GetAsync("product/?searchString=" + searchString);
+                        responseTask.Wait();
+                        res = responseTask.Result;
+                    }
+                    else
+                    {
+                        var responseTask = client.GetAsync("product/");
+                        responseTask.Wait();
+                        res = responseTask.Result;
+                    }
+                    if (res.IsSuccessStatusCode)
+                    {
+                        var readTask = JsonConvert.DeserializeObject<List<Product>>(await res.Content.ReadAsStringAsync());
+                        products = readTask;
+                    }
+                    else
+                    {
+                        products = Enumerable.Empty<Product>();
+                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    }
                 }
-                else
+                catch(Exception ex)
                 {
-                    var responseTask = client.GetAsync("product/");
-                    responseTask.Wait();
-                    res = responseTask.Result;
-                }
-                if (res.IsSuccessStatusCode)
-                {
-                    var readTask = JsonConvert.DeserializeObject<List<Product>>(await res.Content.ReadAsStringAsync());
-                    products = readTask;
-                }
-                else
-                {
-                    products = Enumerable.Empty<Product>();
-                    ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                    @ViewBag.InternalErrorMessage = ex.Message;
                 }
             }
             return View(products);
@@ -67,24 +72,33 @@ namespace InfinityBooksDemo.Controllers
                     IEnumerable<Product> products = null;
                     client.BaseAddress = new Uri(ConfigurationManager.AppSettings["Azfunctionurl"]);
                     client.DefaultRequestHeaders.Add("Ocp-Apim-Subscription-Key", KeyVaultService.InfiniteApiKey);
-                    
-                    var responseTask = client.GetAsync(string.Concat("product/", id));
-                    responseTask.Wait();
 
-                    var result = responseTask.Result;
-                    if (result.IsSuccessStatusCode)
+                    try
                     {
-                        var readTask = JsonConvert.DeserializeObject<List<Product>>(await result.Content.ReadAsStringAsync());
-                        products = readTask;
+                        #region Fetching all products
+                        var responseTask = client.GetAsync(string.Concat("product/", id));
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            var readTask = JsonConvert.DeserializeObject<List<Product>>(await result.Content.ReadAsStringAsync());
+                            products = readTask;
+                        }
+                        else
+                        {
+                            products = Enumerable.Empty<Product>();
+                            ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
+                        }
+                        if (products != null && products.Count() > 0)
+                        {
+                            product = products.First();
+                        }
+                        #endregion
                     }
-                    else
+                    catch (Exception ex)
                     {
-                        products = Enumerable.Empty<Product>();
-                        ModelState.AddModelError(string.Empty, "Server error. Please contact administrator.");
-                    }
-                    if (products != null && products.Count() > 0)
-                    {
-                        product = products.First();
+                        @ViewBag.InternalErrorMessage = ex.Message;
                     }
                 }
             }
